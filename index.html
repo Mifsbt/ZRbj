@@ -1,0 +1,1217 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>阵容编辑器</title>
+<style>
+:root {
+  --bg: #0d0d1a;
+  --surface: #16162e;
+  --surface2: #1e1e3a;
+  --border: #2a2a50;
+  --text: #e8e8f0;
+  --text2: #8888aa;
+  --accent: #6c6cff;
+  --danger: #ff4466;
+  font-family: "Microsoft YaHei","PingFang SC",system-ui,sans-serif;
+  font-size: 13px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+button { font: inherit; border: 0; cursor: pointer; background: none; color: inherit; }
+
+.app { display: flex; height: 100vh; }
+
+/* ========== Top Bar ========== */
+.topbar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; background: var(--surface);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.topbar h1 { font-size: 16px; font-weight: 800; margin-right: auto; }
+.topbar .sub { font-size: 11px; color: var(--text2); }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 30px; padding: 0 14px; border-radius: 6px;
+  font-size: 12px; font-weight: 700; gap: 4px;
+  background: var(--surface2); color: var(--text);
+  border: 1px solid var(--border); transition: all 0.15s;
+}
+.btn:hover { background: #2a2a50; border-color: #4a4a7a; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover { filter: brightness(1.15); }
+
+/* ========== Left Side ========== */
+.left-panel { flex: 0 0 75%; display: flex; flex-direction: column; min-width: 0; }
+.left-body { flex: 1; display: flex; min-height: 0; }
+
+/* ========== Dragon List ========== */
+.dragon-scroll {
+  width: 200px; flex-shrink: 0;
+  overflow-y: auto; padding: 10px 10px 16px;
+  border-right: 1px solid var(--border);
+}
+.dragon-scroll::-webkit-scrollbar { width: 5px; }
+.dragon-scroll::-webkit-scrollbar-track { background: transparent; }
+.dragon-scroll::-webkit-scrollbar-thumb { background: #3a3a5a; border-radius: 3px; }
+.dragon-section-title {
+  font-size: 12px; font-weight: 700; margin-bottom: 8px;
+  color: var(--text2); text-align: center; letter-spacing: 2px;
+}
+.dragon-card {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 5px 6px 4px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 4px;
+}
+.dragon-card:hover { border-color: #4a4a7a; background: #1a1a3a; }
+.dragon-card.active { border-color: var(--accent); box-shadow: 0 0 10px rgba(108,108,255,0.15); background: #1c1c3e; }
+.dragon-card img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+.dragon-img-wrap {
+  width: 100%; height: 115px; border-radius: 4px; overflow: hidden;
+  background: url('bg_SSR_custom.png') center / 120% no-repeat;
+}
+.dragon-card .name { font-size: 11px; font-weight: 700; margin-top: 3px; text-align: center; line-height: 1.2; }
+
+/* ========== Lineup Area ========== */
+.lineup-area {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 16px;
+}
+.lineup-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; letter-spacing: 4px; }
+.lineup-content { display: flex; align-items: center; gap: 24px; }
+.dragon-showcase {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.dragon-showcase .showcase-img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.showcase-wrapper {
+  width: 160px; height: 210px; border-radius: 12px; overflow: hidden;
+  background: url('bg_SSR_custom.png') center / 120% no-repeat;
+  border: 3px solid var(--accent);
+  box-shadow: 0 0 20px rgba(108,108,255,0.3);
+  align-self: center;
+}
+.dragon-showcase .showcase-name { font-size: 15px; font-weight: 700; color: var(--accent); align-self: center; }
+.longyu-grid { display: flex; justify-content: flex-end; align-items: center; gap: 0px; margin-top: 4px; }
+.longyu-grid .longyu-icon {
+  width: 70px; height: 70px; border-radius: 6px;
+  object-fit: cover; display: block; background: #1a1a30;
+  border: 1px solid var(--border); cursor: pointer;
+}
+.longyu-grid .longyu-icon:hover { border-color: var(--accent); }
+
+/* Longyu Modal */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.65); display: flex;
+  align-items: center; justify-content: center; z-index: 9999;
+}
+.modal-content {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px;
+  max-width: 520px; max-height: 80vh; overflow-y: auto;
+  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+}
+.modal-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--accent); text-align: center; }
+.modal-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+}
+.modal-item {
+  cursor: pointer; border: 2px solid transparent;
+  border-radius: 8px; overflow: hidden; transition: border-color 0.15s;
+  background: #1a1a30;
+}
+.modal-item:hover { border-color: var(--accent); }
+.modal-item.active { border-color: #ffd700; }
+.modal-item img { width: 100%; height: auto; display: block; }
+
+.lineup-grid-container { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.lineup-col-labels {
+  display: grid;
+  grid-template-columns: repeat(3, 140px);
+  gap: 10px;
+  margin-bottom: 2px;
+}
+.lineup-col-labels .col-label {
+  text-align: center; font-size: 12px; font-weight: 700;
+  padding: 3px 0; border-radius: 6px; letter-spacing: 2px;
+}
+.col-label.front { color: #ff6b6b; background: rgba(255,107,107,0.1); }
+.col-label.mid { color: #ffd43b; background: rgba(255,212,59,0.1); }
+.col-label.back { color: #74b9ff; background: rgba(116,185,255,0.1); }
+
+.lineup-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 140px);
+  grid-template-rows: repeat(3, 140px);
+  gap: 10px;
+}
+.lineup-slot {
+  position: relative;
+  background: var(--surface);
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.lineup-slot:hover { border-color: #4a4a7a; background: #1a1a3a; }
+.lineup-slot.filled { border-style: solid; border-color: var(--border); }
+.lineup-slot.filled:hover { border-color: var(--accent); }
+.lineup-slot.drag-over { border-color: #ffd700; background: rgba(255,215,0,0.1); box-shadow: inset 0 0 20px rgba(255,215,0,0.15); }
+.lineup-slot.forbidden { border-color: var(--danger); background: rgba(255,68,102,0.08); }
+.lineup-slot .slot-char-bg {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  display: block; pointer-events: none;
+  border-radius: 10px;
+}
+.lineup-slot .slot-char-img {
+  position: relative; z-index: 1;
+  width: 100%; height: 100%;
+  object-fit: contain; display: block;
+  padding: 4%;
+  pointer-events: none;
+}
+.lineup-slot .slot-char-badge {
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  z-index: 2; width: 50%; height: auto;
+  display: block; pointer-events: none;
+}
+.lineup-slot .slot-char-job {
+  position: absolute; top: 0; left: 0;
+  z-index: 3; width: 28%; height: auto;
+  display: block; pointer-events: none;
+}
+/* ========== Skill Order ========== */
+.skill-order-section {
+  width: 100%;   max-width: 740px; margin-top: 16px;
+  background: var(--surface); border-radius: 10px;
+  border: 1px solid var(--border); padding: 14px 16px;
+}
+.skill-order-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.skill-order-title { font-size: 14px; font-weight: 700; }
+.skill-order-hint { font-size: 11px; color: var(--text2); margin-left: auto; }
+.skill-order-row {
+  display: flex; gap: 8px; min-height: 100px;
+  justify-content: center; align-items: center; flex-wrap: wrap;
+}
+.skill-order-row.empty { justify-content: center; color: var(--text2); font-size: 12px; min-height: 137px; }
+.skill-order-item {
+  display: flex; flex-direction: column; align-items: center; gap: 15px;
+  cursor: grab; user-select: none; flex-shrink: 0;
+}
+.skill-order-item:hover .so-icon-wrapper { border-color: var(--accent); }
+.skill-order-item.dragging { opacity: 0.3; }
+.skill-order-item.drag-over .so-icon-wrapper { border-color: #ffd700; }
+.so-icon-wrapper {
+  position: relative; width: 100px; height: 100px;
+  border-radius: 8px; overflow: hidden;
+  border: 2px solid var(--border);
+  transition: border-color 0.15s, transform 0.15s;
+}
+.skill-order-item:hover .so-icon-wrapper { transform: scale(1.08); }
+.skill-order-item.drag-over .so-icon-wrapper { transform: scale(1.1); }
+.so-icon-wrapper .so-bg {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  object-fit: cover; pointer-events: none;
+}
+.so-icon-wrapper .so-avatar {
+  position: relative; z-index: 1; width: 100%; height: 100%;
+  object-fit: contain; padding: 6%; pointer-events: none;
+}
+.so-icon-wrapper .so-badge {
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  z-index: 2; width: 50%; height: auto; pointer-events: none;
+}
+.so-icon-wrapper .so-job {
+  position: absolute; top: 0; left: 0;
+  z-index: 3; width: 32%; height: auto; pointer-events: none;
+}
+.so-icon-wrapper .so-idx {
+  position: absolute; top: 2px; right: 2px; z-index: 10;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--accent); color: #fff; font-size: 14px;
+  font-weight: 700; display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+/* Individual Toggle */
+.so-individual-toggle { position: relative; display: inline-block; width: 44px; height: 22px; flex-shrink: 0; }
+.so-individual-toggle input { opacity: 0; width: 0; height: 0; }
+.so-individual-toggle .so-toggle-slider {
+  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+  background: #3a3a5a; border-radius: 22px; transition: 0.3s;
+}
+.so-individual-toggle .so-toggle-slider::before {
+  content: ''; position: absolute; left: 3px; bottom: 3px;
+  width: 16px; height: 16px; border-radius: 50%; background: #888;
+  transition: 0.3s;
+}
+.so-individual-toggle input:checked + .so-toggle-slider { background: var(--accent); }
+.so-individual-toggle input:checked + .so-toggle-slider::before { transform: translateX(22px); background: #fff; }
+
+.lineup-slot .slot-restriction-msg {
+  display: none;
+  position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+  z-index: 5; font-size: 9px; color: var(--danger); font-weight: 600;
+  background: rgba(0,0,0,0.7); padding: 0 6px; border-radius: 4px;
+  white-space: nowrap; pointer-events: none;
+}
+
+/* ========== Right Side ========== */
+.right-panel {
+  flex: 0 0 25%; display: flex; flex-direction: column;
+  border-left: 1px solid var(--border); background: var(--surface); min-width: 0;
+}
+.pool-title { font-size: 13px; font-weight: 700; }
+.pool-filters {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  padding: 8px 12px 4px; flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+.filter-btn {
+  padding: 4px 10px; border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text2);
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  transition: all 0.15s; white-space: nowrap;
+}
+.filter-btn:hover { background: #2a2a4e; color: #fff; }
+.filter-btn.active { background: rgba(108,108,255,0.2); color: #fff; border-color: var(--accent); }
+
+.pool-scroll { flex: 1; overflow-y: auto; padding: 8px 12px 16px; }
+.pool-scroll::-webkit-scrollbar { width: 6px; }
+.pool-scroll::-webkit-scrollbar-track { background: transparent; }
+.pool-scroll::-webkit-scrollbar-thumb { background: #3a3a5a; border-radius: 3px; }
+
+.pool-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; align-content: flex-start; }
+
+.char-card {
+  position: relative; border-radius: 6px; cursor: grab;
+  aspect-ratio: 1; overflow: hidden;
+  border: 2px solid transparent;
+  transition: transform 0.15s, border-color 0.15s;
+}
+.char-card:active { cursor: grabbing; }
+.char-card.dragging { opacity: 0.3; }
+.char-card:hover { transform: scale(1.06); border-color: var(--accent); z-index: 2; }
+.char-card.selected { border-color: #ffd700; box-shadow: 0 0 12px rgba(255,215,0,0.3); }
+.char-card.placed { display: none !important; }
+.char-card .char-bg {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  display: block; pointer-events: none;
+}
+.char-card .char-avatar {
+  position: relative; z-index: 1; display: block;
+  width: 100%; height: 100%; object-fit: contain;
+  padding: 10%; pointer-events: none;
+}
+.char-card .char-badge {
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  z-index: 2; width: 50%; height: auto;
+  display: block; pointer-events: none;
+}
+.char-card .char-job {
+  position: absolute; top: 0; left: 0;
+  z-index: 3; width: 32%; height: auto;
+  display: block; pointer-events: none;
+}
+
+/* ========== Status ========== */
+.statusbar {
+  height: 26px; display: flex; align-items: center;
+  padding: 0 14px; font-size: 10px; color: var(--text2);
+  border-top: 1px solid var(--border); flex-shrink: 0;
+}
+.statusbar.success { color: #69DB7C; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="left-panel">
+    <div class="topbar">
+      <img src="logo.png" style="height:28px;width:auto;display:block;">
+      <h1>阵容编辑器</h1>
+      <span class="sub" id="charCount"></span>
+      <button class="btn" id="saveBtn">保存</button>
+      <button class="btn" id="resetBtn">重置</button>
+    </div>
+    <div class="left-body">
+      <div class="dragon-scroll" id="dragonList"></div>
+      <div class="lineup-area">
+        <div class="lineup-title"></div>
+        <div class="lineup-content">
+          <div class="dragon-showcase" id="dragonShowcase">
+            <div class="showcase-wrapper">
+              <img class="showcase-img" id="showcaseImg" src="" alt="">
+            </div>
+            <div class="showcase-name" id="showcaseName">星辰龙</div>
+            <div class="longyu-grid" id="longyuGrid">
+              <img class="longyu-icon" style="display:none" onerror="this.style.display='none'">
+              <img class="longyu-icon" style="display:none" onerror="this.style.display='none'">
+              <img class="longyu-icon" style="display:none" onerror="this.style.display='none'">
+              <img class="longyu-icon" style="display:none" onerror="this.style.display='none'">
+            </div>
+          </div>
+          <div class="lineup-grid-container">
+            <div class="lineup-col-labels">
+              <span class="col-label back">后排</span>
+              <span class="col-label mid">中排</span>
+              <span class="col-label front">前排</span>
+            </div>
+            <div class="lineup-grid" id="lineupGrid"></div>
+          </div>
+        </div>
+        <div class="skill-order-section" id="skillOrderSection">
+          <div class="skill-order-header">
+            <span class="skill-order-title">奥义顺序</span>
+          </div>
+          <div class="skill-order-row" id="skillOrderRow"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="topbar">
+      <div class="pool-title">角色池</div>
+      <span style="font-size:11px;color:var(--text2);margin-left:auto;">作者：番薯不甜</span>
+    </div>
+    <div class="pool-filters" id="poolJobFilters"></div>
+    <div class="pool-filters" id="poolFactionFilters"></div>
+    <div class="pool-scroll">
+      <div class="pool-grid" id="poolGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="statusbar" id="statusbar">拖拽角色到阵容空槽，或点击选中后点空槽上阵</div>
+
+<script>
+const FACTIONS = ["元素","旷野","奥术","圣堂","彼岸","幻境"];
+const JOB_NAMES = { 1:'守卫', 2:'牧师', 3:'刺客', 4:'战士', 5:'射手', 6:'法师' };
+
+// Data from 角色信息结果.txt, keyed by Sprite ID (icon_hero_XXXX → XXXX)
+const CHAR_DATA = {
+  1502:{n:'史莱姆王',j:1,f:['彼岸','幻境']},  1503:{n:'远古魔像',j:1,f:['圣堂','元素']},  1504:{n:'野兽之王',j:1,f:['奥术','幻境']},  1505:{n:'奥伯隆妮',j:1,f:['元素','旷野']},  1601:{n:'冥界判官',j:1,f:['彼岸','元素']},  1602:{n:'赫尔薇尔',j:1,f:['彼岸','圣堂']},
+  1603:{n:'铁血统帅',j:1,f:['奥术','幻境']},  1604:{n:'锻火龙姬',j:1,f:['旷野','元素']},  1605:{n:'凯旋皇女',j:1,f:['圣堂','幻境']},  1606:{n:'七纱舞娘',j:1,f:['元素','彼岸']},  1608:{n:'英魂统领',j:1,f:['彼岸','旷野']},  1701:{n:'智慧女神',j:1,f:['圣堂','旷野']},
+  1702:{n:'盗火之神',j:1,f:['旷野','奥术']},  2501:{n:'奥法领主',j:2,f:['幻境','奥术']},  2502:{n:'铁胃暴君',j:2,f:['旷野','彼岸']},  2601:{n:'祈愿灯神',j:2,f:['奥术','圣堂']},  2602:{n:'妖精仙后',j:2,f:['旷野','元素']},  2603:{n:'圣剑主教',j:2,f:['圣堂','幻境']},
+  2604:{n:'湖中仙女',j:2,f:['元素','圣堂']},  2605:{n:'护戒圣女',j:2,f:['彼岸','旷野']},  2606:{n:'繁星魔女',j:2,f:['元素','幻境']},  2608:{n:'示巴女王',j:2,f:['旷野','奥术']},  2701:{n:'维纳斯',j:2,f:['旷野','元素']},  2702:{n:'死亡女神',j:2,f:['圣堂','彼岸']},
+  3501:{n:'魅夜之狩',j:3,f:['元素','奥术']},  3502:{n:'湖上骑士',j:3,f:['圣堂','元素']},  3503:{n:'复仇女神',j:3,f:['奥术','幻境']},  3601:{n:'太极宗师',j:3,f:['旷野','幻境']},  3602:{n:'鹰之勇者',j:3,f:['圣堂','奥术']},  3603:{n:'白虎',j:3,f:['旷野','彼岸']},
+  3604:{n:'尘世巨蟒',j:3,f:['圣堂','幻境']},  3605:{n:'死亡骑士',j:3,f:['彼岸','元素']},  3606:{n:'幽冥公主',j:3,f:['元素','奥术']},  3607:{n:'无双剑豪',j:3,f:['圣堂','彼岸']},  3608:{n:'永夜女王',j:3,f:['幻境','旷野']},  3701:{n:'冥府之王',j:3,f:['奥术','彼岸']},
+  3702:{n:'捷足之神',j:3,f:['幻境','元素']},  4501:{n:'迷宫魔王',j:4,f:['旷野','彼岸']},  4502:{n:'狂猎之王',j:4,f:['彼岸','奥术']},  4503:{n:'英灵战士',j:4,f:['圣堂','幻境']},  4504:{n:'英雄王',j:4,f:['元素','旷野']},  4601:{n:'女武神',j:4,f:['圣堂','彼岸']},
+  4602:{n:'六臂蛇魔',j:4,f:['奥术','旷野']},  4603:{n:'永恒之王',j:4,f:['圣堂','幻境']},  4604:{n:'蛮力神牛',j:4,f:['旷野','彼岸']},  4605:{n:'屠龙勇士',j:4,f:['元素','旷野']},  4606:{n:'噬血魔剑',j:4,f:['幻境','旷野']},  4607:{n:'青龙',j:4,f:['彼岸','奥术']},
+  4608:{n:'恶欲魔王',j:4,f:['彼岸','旷野']},  4609:{n:'断罪之翼',j:4,f:['奥术','幻境']},  4610:{n:'乱世魔王',j:4,f:['旷野','圣堂']},  4701:{n:'阿瑞斯',j:4,f:['幻境','奥术']},  4702:{n:'角色ID',j:1,f:[]},  4703:{n:'大力神',j:4,f:['旷野','奥术']},
+  5501:{n:'光耀元素',j:5,f:['圣堂','元素']},  5502:{n:'猎魔人',j:5,f:['奥术','幻境']},  5503:{n:'蛇发女妖',j:5,f:['幻境','彼岸']},  5601:{n:'伊芙利特',j:5,f:['奥术','元素']},  5602:{n:'双生鸦灵',j:5,f:['旷野','幻境']},  5603:{n:'霜星猎手',j:5,f:['元素','幻境']},
+  5604:{n:'万蛇之母',j:5,f:['幻境','彼岸']},  5605:{n:'腐败花蕾',j:5,f:['幻境','彼岸']},  5606:{n:'智慧巨人',j:5,f:['圣堂','奥术']},  5607:{n:'绯刃剑魂',j:5,f:['旷野','彼岸']},  5608:{n:'破魔巫女',j:5,f:['奥术','旷野']},  5701:{n:'太阳神',j:5,f:['彼岸','圣堂']},
+  5702:{n:'月亮女神',j:5,f:['奥术','幻境']},  6501:{n:'角色ID',j:1,f:[]},  6502:{n:'烈焰魔女',j:6,f:['元素','圣堂']},  6503:{n:'埃及艳后',j:6,f:['彼岸','奥术']},  6504:{n:'暗影元素',j:6,f:['元素','幻境']},  6505:{n:'四季鹿灵',j:6,f:['旷野','奥术']},
+  6601:{n:'大天使',j:6,f:['圣堂','彼岸']},  6602:{n:'半神巫妖',j:6,f:['彼岸','元素']},  6603:{n:'浮士德',j:6,f:['彼岸','幻境']},  6604:{n:'青铜神姬',j:6,f:['奥术','旷野']},  6605:{n:'黑猫女神',j:6,f:['彼岸','奥术']},  6606:{n:'克拉苏',j:6,f:['幻境','奥术']},
+  6607:{n:'朱雀',j:6,f:['元素','幻境']},  6608:{n:'绝代妖狐',j:6,f:['旷野','圣堂']},  6609:{n:'北境女王',j:6,f:['元素','奥术']},  6701:{n:'波塞冬',j:6,f:['元素','幻境']},  6702:{n:'诡计之神',j:6,f:['彼岸','旷野']}
+};
+const CHAR_NAMES = Object.values(CHAR_DATA).map(d => d.n);
+
+function getSpriteID(name) {
+  for (const [id, d] of Object.entries(CHAR_DATA)) {
+    if (d.n === name) return Number(id);
+  }
+  return 1502;
+}
+
+function getSpriteFile(name) {
+  return 'Sprite/icon_hero_' + getSpriteID(name) + '.png';
+}
+
+function getCharName(id) {
+  return (CHAR_DATA[id] || {}).n || '未知';
+}
+
+function getCharFactions(name) {
+  const id = getSpriteID(name);
+  return (CHAR_DATA[id] || {}).f || [];
+}
+
+function getJobClass(name) {
+  const id = getSpriteID(name);
+  return (CHAR_DATA[id] || {}).j || 1;
+}
+
+function isSSR(name) {
+  const p = Math.floor(getSpriteID(name) / 100);
+  return [17, 27, 37, 47, 57, 67].includes(p);
+}
+
+// ===== Longyu =====
+const LONGYU_FILES = [
+  'MythsMagicIcon_801015.png','MythsMagicIcon_801025.png','MythsMagicIcon_801035.png','MythsMagicIcon_801045.png',
+  'MythsMagicIcon_801055.png','MythsMagicIcon_801065.png','MythsMagicIcon_801075.png','MythsMagicIcon_801086.png',
+  'MythsMagicIcon_801096.png','MythsMagicIcon_801106.png','MythsMagicIcon_801116.png','MythsMagicIcon_801126.png',
+  'MythsMagicIcon_801135.png','MythsMagicIcon_801146.png','MythsMagicIcon_801156.png','MythsMagicIcon_801166.png',
+  'MythsMagicIcon_801176.png','MythsMagicIcon_801186.png',
+  'MythsMagicIcon_802015.png','MythsMagicIcon_802025.png','MythsMagicIcon_802035.png','MythsMagicIcon_802045.png',
+  'MythsMagicIcon_802055.png','MythsMagicIcon_802065.png','MythsMagicIcon_802075.png','MythsMagicIcon_802086.png',
+  'MythsMagicIcon_802096.png','MythsMagicIcon_802106.png','MythsMagicIcon_802116.png','MythsMagicIcon_802126.png',
+  'MythsMagicIcon_802136.png','MythsMagicIcon_802146.png','MythsMagicIcon_802156.png','MythsMagicIcon_802166.png',
+  'MythsMagicIcon_802176.png','MythsMagicIcon_802186.png',
+  'MythsMagicIcon_803015.png','MythsMagicIcon_803025.png','MythsMagicIcon_803035.png','MythsMagicIcon_803045.png',
+  'MythsMagicIcon_803055.png','MythsMagicIcon_803065.png','MythsMagicIcon_803076.png','MythsMagicIcon_803086.png',
+  'MythsMagicIcon_803096.png','MythsMagicIcon_803106.png','MythsMagicIcon_803116.png','MythsMagicIcon_803126.png',
+  'MythsMagicIcon_803136.png','MythsMagicIcon_803146.png','MythsMagicIcon_803156.png','MythsMagicIcon_803166.png',
+  'MythsMagicIcon_803176.png','MythsMagicIcon_803186.png','MythsMagicIcon_803196.png','MythsMagicIcon_803206.png',
+  'MythsMagicIcon_803216.png','MythsMagicIcon_803226.png',
+  'MythsMagicIcon_804016.png','MythsMagicIcon_804036.png','MythsMagicIcon_804046.png','MythsMagicIcon_804056.png',
+  'MythsMagicIcon_804066.png','MythsMagicIcon_804076.png','MythsMagicIcon_804086.png','MythsMagicIcon_804096.png',
+  'MythsMagicIcon_804106.png','MythsMagicIcon_804116.png','MythsMagicIcon_804126.png','MythsMagicIcon_804136.png',
+  'MythsMagicIcon_804146.png','MythsMagicIcon_804156.png','MythsMagicIcon_804166.png','MythsMagicIcon_804176.png',
+  'MythsMagicIcon_804186.png','MythsMagicIcon_804196.png','MythsMagicIcon_804206.png','MythsMagicIcon_804216.png',
+  'MythsMagicIcon_804226.png',
+];
+// Group by position: 801→slot0, 802→slot1, 803→slot2, 804→slot3
+const LONGYU_BY_SLOT = [[],[],[],[]];
+LONGYU_FILES.forEach(f => {
+  const m = f.match(/MythsMagicIcon_80(\d)/);
+  if (m) {
+    const slot = parseInt(m[1]) - 1;
+    if (slot >= 0 && slot < 4) LONGYU_BY_SLOT[slot].push(f);
+  }
+});
+const longyuSelections = {}; // { dragonName: ['file0','file1','file2','file3'] }
+
+function getLongyuSelection(dragon, slotIdx) {
+  const sel = longyuSelections[dragon.name];
+  return (sel && sel[slotIdx]) || (dragon.longyu && dragon.longyu[slotIdx]) || LONGYU_BY_SLOT[slotIdx][0];
+}
+
+function setLongyuSelection(dragon, slotIdx, file) {
+  dragon.longyu[slotIdx] = file;
+  save();
+}
+
+function canPlaceInSlot(name, slotIdx) {
+  const job = getJobClass(name);
+  const col = slotIdx % 3; // 0=后排, 1=中排, 2=前排
+  if (job === 1) return col === 2;       // 守卫 → 前排
+  if (job === 4) return col >= 1;        // 战士 → 前排+中排
+  if ([2,5,6].includes(job)) return col <= 1; // 牧师/射手/法师 → 中排+后排
+  return true; // 刺客 → 任意
+}
+
+function getSlotRestriction(col) {
+  if (col === 2) return '前排';
+  if (col === 1) return '中排';
+  return '后排';
+}
+
+const $ = id => document.getElementById(id);
+const poolGrid = $('poolGrid');
+const lineupGrid = $('lineupGrid');
+const statusbar = $('statusbar');
+const charCount = $('charCount');
+const dragonList = $('dragonList');
+let poolJobFilter = '全部';
+let poolFactionFilter = '全部';
+
+// ===== Dragons =====
+const DRAGONS = [
+  { name:'元素回响', file:'card_myth_8501_custom.png', stars:5, lv:80, longyu:['MythsMagicIcon_801015.png','MythsMagicIcon_802015.png','MythsMagicIcon_803025.png','MythsMagicIcon_804016.png'] },
+  { name:'旷野之灵', file:'card_myth_8502_custom.png', stars:4, lv:72, longyu:['MythsMagicIcon_801015.png','MythsMagicIcon_802015.png','MythsMagicIcon_803025.png','MythsMagicIcon_804016.png'] },
+  { name:'奥术智慧', file:'card_myth_8503_custom.png', stars:5, lv:78, longyu:['MythsMagicIcon_801015.png','MythsMagicIcon_802015.png','MythsMagicIcon_803025.png','MythsMagicIcon_804016.png'] },
+  { name:'圣堂荣光', file:'card_myth_8504_custom.png', stars:4, lv:65, longyu:['MythsMagicIcon_801015.png','MythsMagicIcon_802015.png','MythsMagicIcon_803025.png','MythsMagicIcon_804016.png'] },
+  { name:'彼岸再临', file:'card_myth_8505_custom.png', stars:3, lv:58, longyu:['MythsMagicIcon_801015.png','MythsMagicIcon_802015.png','MythsMagicIcon_803025.png','MythsMagicIcon_804016.png'] },
+  { name:'幻境秘影', file:'card_myth_8506_custom.png', stars:5, lv:85, longyu:['MythsMagicIcon_801015.png','MythsMagicIcon_802015.png','MythsMagicIcon_803025.png','MythsMagicIcon_804016.png'] },
+];
+let activeDragon = null;
+
+const SVG_FALLBACK = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="170" height="100"><rect fill="#1a1a30" width="170" height="100"/><text x="85" y="60" text-anchor="middle" fill="#555" font-size="30">🐉</text></svg>');
+const SHOWCASE_FALLBACK = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="210"><rect fill="#1a1a30" width="160" height="210"/><text x="80" y="115" text-anchor="middle" fill="#555" font-size="44">🐉</text></svg>');
+const SLOT_FALLBACK = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="84" height="84"><rect fill="#1a1a30" width="84" height="84"/><circle cx="42" cy="36" r="14" fill="#555"/><rect x="26" y="56" width="32" height="18" rx="6" fill="#555"/></svg>');
+
+function updateDragonShowcase(d) {
+  const img = document.getElementById('showcaseImg');
+  const name = document.getElementById('showcaseName');
+  img.src = 'ass/龙/' + d.file;
+  img.onerror = function() { this.src = SHOWCASE_FALLBACK; };
+  name.textContent = d.name;
+  // Update longyu icons
+  document.querySelectorAll('#longyuGrid .longyu-icon').forEach((el, i) => {
+    const file = getLongyuSelection(d, i);
+    el.src = 'longyu/' + file;
+    el.style.display = '';
+    el.title = file;
+    el.onclick = function(e) { openLongyuModal(d, i); e.stopPropagation(); };
+  });
+}
+
+let modalSlotIdx = null;
+let modalDragon = null;
+
+function openLongyuModal(dragon, slotIdx) {
+  modalDragon = dragon;
+  modalSlotIdx = slotIdx;
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.onclick = function(e) { if (e.target === this) closeModal(); };
+
+  const content = document.createElement('div');
+  content.className = 'modal-content';
+
+  const title = document.createElement('div');
+  title.className = 'modal-title';
+  title.textContent = '选择龙语 - 第' + (slotIdx + 1) + '位';
+
+  const grid = document.createElement('div');
+  grid.className = 'modal-grid';
+
+  const currentFile = getLongyuSelection(dragon, slotIdx);
+
+  LONGYU_BY_SLOT[slotIdx].forEach(file => {
+    const item = document.createElement('div');
+    item.className = 'modal-item' + (file === currentFile ? ' active' : '');
+    const img = document.createElement('img');
+    img.src = 'longyu/' + file;
+    img.onerror = function() { this.style.display = 'none'; };
+    img.draggable = false;
+    item.appendChild(img);
+    item.onclick = function() {
+      setLongyuSelection(dragon, slotIdx, file);
+      updateDragonShowcase(dragon);
+      closeModal();
+      setStatus('龙语已更换：' + file, true);
+    };
+    grid.appendChild(item);
+  });
+
+  content.appendChild(title);
+  content.appendChild(grid);
+  overlay.appendChild(content);
+  document.body.appendChild(overlay);
+}
+
+function closeModal() {
+  const overlay = document.querySelector('.modal-overlay');
+  if (overlay) overlay.remove();
+  modalSlotIdx = null;
+  modalDragon = null;
+}
+
+function initDragonList() {
+  DRAGONS.forEach((d, i) => {
+    const card = document.createElement('div');
+    card.className = 'dragon-card' + (i === 0 ? ' active' : '');
+    card.innerHTML = `
+      <div class="dragon-img-wrap"><img src="ass/龙/${d.file}" alt="${d.name}" onerror="this.src='${SVG_FALLBACK}'"></div>
+      <div class="name">${d.name}</div>
+    `;
+    card.addEventListener('click', function() {
+      document.querySelectorAll('.dragon-card').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+      activeDragon = d;
+      updateDragonShowcase(d);
+      setStatus('已选择巨龙：' + d.name);
+    });
+    dragonList.appendChild(card);
+  });
+  activeDragon = DRAGONS[0];
+  updateDragonShowcase(activeDragon);
+}
+
+// ===== Lineup =====
+let lineup = new Array(9).fill(null);
+let selectedChar = null;
+let skillOrder = [];
+let skillOrderToggles = {};
+let skillOrderEnabled = true;
+let dragSkillIdx = null;
+let movingChar = null; // for moving between slots
+
+function lineupCount() { return lineup.filter(Boolean).length; }
+function isInLineup(name) {
+  return lineup.includes(name);
+}
+
+function renderLineup() {
+  lineupGrid.innerHTML = '';
+  lineup.forEach((name, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'lineup-slot' + (name ? ' filled' : '');
+    slot.dataset.idx = i;
+
+    if (name) {
+      const bg = document.createElement('img');
+      bg.className = 'slot-char-bg';
+      bg.src = isSSR(name) ? 'SSR.png' : 'SR.png';
+      bg.onerror = function() { this.style.display = 'none'; };
+
+      const avatar = document.createElement('img');
+      avatar.className = 'slot-char-img';
+      avatar.src = getSpriteFile(name);
+      avatar.onerror = function() { this.src = SLOT_FALLBACK; };
+      avatar.draggable = false;
+
+      const badge = document.createElement('img');
+      badge.className = 'slot-char-badge';
+      badge.src = 'S6.png';
+      badge.onerror = function() { this.style.display = 'none'; };
+
+      const jobIcon = document.createElement('img');
+      jobIcon.className = 'slot-char-job';
+      jobIcon.src = 'common_Job_' + getJobClass(name) + '.png';
+      jobIcon.onerror = function() { this.style.display = 'none'; };
+
+      slot.appendChild(bg);
+      slot.appendChild(avatar);
+      slot.appendChild(badge);
+      slot.appendChild(jobIcon);
+      slot.title = name + ' (左键换位，右键移除)';
+      slot.draggable = true;
+
+      slot.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        const idx = parseInt(this.dataset.idx);
+        const removed = lineup[idx];
+        lineup[idx] = null;
+        renderLineup();
+        applyPoolFilter();
+        setStatus('已移除 ' + removed);
+      });
+
+      slot.addEventListener('dragstart', function(e) {
+        this.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', name);
+      });
+      slot.addEventListener('dragend', function(e) {
+        this.classList.remove('dragging');
+        document.querySelectorAll('.lineup-slot').forEach(s => s.classList.remove('drag-over'));
+      });
+    } else {
+      const col = i % 3;
+      slot.innerHTML = '<div class="slot-empty-icon" style="font-size:40px;color:var(--text2);opacity:0.3;">+</div>';
+      slot.title = selectedChar ? '点击放入 ' + selectedChar : '空位';
+    }
+
+    slot.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const dropName = e.dataTransfer.getData('text/plain');
+      if (dropName) {
+        const idx = parseInt(this.dataset.idx);
+        if (!lineup[idx] && !canPlaceInSlot(dropName, idx)) {
+          this.classList.add('forbidden');
+          return;
+        }
+      }
+      this.classList.add('drag-over');
+    });
+    slot.addEventListener('dragleave', function(e) {
+      this.classList.remove('drag-over');
+      this.classList.remove('forbidden');
+    });
+    slot.addEventListener('drop', function(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+      this.classList.remove('forbidden');
+      document.querySelectorAll('.lineup-slot').forEach(s => s.classList.remove('drag-over','forbidden'));
+      const dropName = e.dataTransfer.getData('text/plain');
+      if (!dropName) return;
+      const fromIdx = lineup.indexOf(dropName);
+      const toIdx = parseInt(this.dataset.idx);
+
+      if (fromIdx === toIdx) return;
+
+      // Check restriction
+      if (!lineup[toIdx] && !canPlaceInSlot(dropName, toIdx)) {
+        setStatus(JOB_NAMES[getJobClass(dropName)] + '不能放在' + getSlotRestriction(toIdx % 3));
+        return;
+      }
+
+      // From pool or another slot
+      if (fromIdx === -1) {
+        // From pool - already placed check
+        if (isInLineup(dropName)) { setStatus('该角色已上阵'); return; }
+        if (lineupCount() >= 6) { setStatus('阵容已满（最多6人）'); return; }
+        if (!canPlaceInSlot(dropName, toIdx)) { setStatus('该职业不能放在此位置'); return; }
+        lineup[toIdx] = dropName;
+      } else {
+        // Moving between slots
+        if (lineup[toIdx]) {
+          // Swap
+          const temp = lineup[toIdx];
+          if (temp && !canPlaceInSlot(temp, fromIdx)) {
+            setStatus(JOB_NAMES[getJobClass(temp)] + '不能放在' + getSlotRestriction(fromIdx % 3));
+            return;
+          }
+          if (!canPlaceInSlot(dropName, toIdx)) {
+            setStatus(JOB_NAMES[getJobClass(dropName)] + '不能放在' + getSlotRestriction(toIdx % 3));
+            return;
+          }
+          lineup[fromIdx] = temp;
+          lineup[toIdx] = dropName;
+        } else {
+          if (!canPlaceInSlot(dropName, toIdx)) {
+            setStatus(JOB_NAMES[getJobClass(dropName)] + '不能放在' + getSlotRestriction(toIdx % 3));
+            return;
+          }
+          lineup[toIdx] = dropName;
+          lineup[fromIdx] = null;
+        }
+      }
+      movingChar = null;
+      renderLineup();
+      applyPoolFilter();
+      setStatus('已上阵 ' + dropName);
+    });
+
+    slot.addEventListener('click', function() {
+      const idx = parseInt(this.dataset.idx);
+      const current = lineup[idx];
+
+      if (movingChar) {
+        // Placing movingChar into this slot
+        if (current) {
+          // Swap
+          if (!canPlaceInSlot(movingChar, idx)) {
+            setStatus(JOB_NAMES[getJobClass(movingChar)] + '不能放在' + getSlotRestriction(idx % 3));
+            movingChar = null;
+            renderLineup();
+            return;
+          }
+          const fromIdx = lineup.indexOf(movingChar);
+          if (fromIdx === idx) { movingChar = null; renderLineup(); return; }
+          if (!canPlaceInSlot(current, fromIdx)) {
+            setStatus(JOB_NAMES[getJobClass(current)] + '不能放在' + getSlotRestriction(fromIdx % 3));
+            movingChar = null;
+            renderLineup();
+            return;
+          }
+          lineup[fromIdx] = current;
+          lineup[idx] = movingChar;
+        } else {
+          if (!canPlaceInSlot(movingChar, idx)) {
+            setStatus(JOB_NAMES[getJobClass(movingChar)] + '不能放在' + getSlotRestriction(idx % 3));
+            movingChar = null;
+            renderLineup();
+            return;
+          }
+          const fromIdx = lineup.indexOf(movingChar);
+          lineup[fromIdx] = null;
+          lineup[idx] = movingChar;
+        }
+        movingChar = null;
+        renderLineup();
+        applyPoolFilter();
+        return;
+      }
+
+      if (current) {
+        if (selectedChar) {
+          // Try to replace with selectedChar from pool
+          if (isInLineup(selectedChar)) { setStatus('该角色已上阵'); return; }
+          if (!canPlaceInSlot(selectedChar, idx)) {
+            setStatus(JOB_NAMES[getJobClass(selectedChar)] + '不能放在' + getSlotRestriction(idx % 3));
+            return;
+          }
+          lineup[idx] = selectedChar;
+          document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
+          selectedChar = null;
+          renderLineup();
+          applyPoolFilter();
+          setStatus('已替换为 ' + lineup[idx]);
+        } else {
+          // Start moving this character
+          movingChar = current;
+          // Highlight all valid slots
+          document.querySelectorAll('.lineup-slot').forEach(s => {
+            const si = parseInt(s.dataset.idx);
+            if (si !== idx && canPlaceInSlot(current, si)) {
+              s.style.boxShadow = 'inset 0 0 20px rgba(108,108,255,0.2)';
+            }
+          });
+          this.style.borderColor = '#ffd700';
+          setStatus('点击其他空槽放置 ' + current + '，或再次取消');
+        }
+      } else if (selectedChar) {
+        if (isInLineup(selectedChar)) { setStatus('该角色已上阵'); return; }
+        if (lineupCount() >= 6) { setStatus('阵容已满（最多6人）'); return; }
+        if (!canPlaceInSlot(selectedChar, idx)) {
+          setStatus(JOB_NAMES[getJobClass(selectedChar)] + '不能放在' + getSlotRestriction(idx % 3));
+          return;
+        }
+        lineup[idx] = selectedChar;
+        document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
+        selectedChar = null;
+        renderLineup();
+        applyPoolFilter();
+        setStatus('已上阵 ' + lineup[idx]);
+      } else if (movingChar) {
+        movingChar = null;
+        renderLineup();
+        setStatus('已取消');
+      }
+    });
+
+    lineupGrid.appendChild(slot);
+  });
+  // Prevent browser context menu on the grid
+  lineupGrid.addEventListener('contextmenu', e => e.preventDefault());
+  save();
+  updateSkillOrder();
+}
+
+// ===== Skill Order =====
+function updateSkillOrder() {
+  const onField = lineup.filter(Boolean);
+  skillOrder = skillOrder.filter(name => onField.includes(name));
+  onField.forEach(name => {
+    if (!skillOrder.includes(name)) { skillOrder.push(name); }
+    if (skillOrderToggles[name] === undefined) skillOrderToggles[name] = true;
+  });
+  renderSkillOrder();
+}
+
+function renderSkillOrder() {
+  const row = document.getElementById('skillOrderRow');
+  if (!row) return;
+  row.innerHTML = '';
+  if (skillOrder.length === 0) {
+    row.className = 'skill-order-row empty';
+    row.textContent = '阵容为空，请先上阵角色';
+    return;
+  }
+  row.className = 'skill-order-row';
+  skillOrder.forEach((name, i) => {
+    const item = document.createElement('div');
+    item.className = 'skill-order-item';
+    item.draggable = true;
+    item.dataset.name = name;
+    item.dataset.idx = i;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'so-icon-wrapper';
+
+    const bg = document.createElement('img');
+    bg.className = 'so-bg';
+    bg.src = isSSR(name) ? 'SSR.png' : 'SR.png';
+    bg.onerror = function() { this.style.display = 'none'; };
+
+    const avatar = document.createElement('img');
+    avatar.className = 'so-avatar';
+    avatar.src = getSpriteFile(name);
+    avatar.onerror = function() { this.style.display = 'none'; };
+
+    const badge = document.createElement('img');
+    badge.className = 'so-badge';
+    badge.src = 'S6.png';
+    badge.onerror = function() { this.style.display = 'none'; };
+
+    const jobIcon = document.createElement('img');
+    jobIcon.className = 'so-job';
+    jobIcon.src = 'common_Job_' + getJobClass(name) + '.png';
+    jobIcon.onerror = function() { this.style.display = 'none'; };
+
+    const idxBadge = document.createElement('div');
+    idxBadge.className = 'so-idx';
+    idxBadge.textContent = i + 1;
+
+    wrapper.appendChild(bg);
+    wrapper.appendChild(avatar);
+    wrapper.appendChild(badge);
+    wrapper.appendChild(jobIcon);
+    wrapper.appendChild(idxBadge);
+    item.appendChild(wrapper);
+
+    const toggleLabel = document.createElement('label');
+    toggleLabel.className = 'so-individual-toggle';
+    const toggleInput = document.createElement('input');
+    toggleInput.type = 'checkbox';
+    toggleInput.checked = skillOrderToggles[name] !== false;
+    toggleInput.addEventListener('change', function(e) {
+      skillOrderToggles[name] = this.checked;
+      e.stopPropagation();
+    });
+    const toggleSlider = document.createElement('span');
+    toggleSlider.className = 'so-toggle-slider';
+    toggleLabel.appendChild(toggleInput);
+    toggleLabel.appendChild(toggleSlider);
+    // Prevent drag on toggle interaction
+    toggleLabel.addEventListener('mousedown', function(e) { e.stopPropagation(); });
+    item.appendChild(toggleLabel);
+
+    item.addEventListener('dragstart', function(e) {
+      this.classList.add('dragging');
+      dragSkillIdx = i;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', name);
+    });
+    item.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      document.querySelectorAll('.skill-order-item').forEach(el => el.classList.remove('drag-over'));
+      this.classList.add('drag-over');
+    });
+    item.addEventListener('dragleave', function(e) {
+      this.classList.remove('drag-over');
+    });
+    item.addEventListener('drop', function(e) {
+      e.preventDefault();
+      document.querySelectorAll('.skill-order-item').forEach(el => el.classList.remove('drag-over','dragging'));
+      const fromIdx = dragSkillIdx;
+      const toIdx = parseInt(this.dataset.idx);
+      if (fromIdx === toIdx || fromIdx == null) return;
+      const moved = skillOrder.splice(fromIdx, 1)[0];
+      skillOrder.splice(toIdx > fromIdx ? toIdx - 1 : toIdx, 0, moved);
+      dragSkillIdx = null;
+      renderSkillOrder();
+    });
+    item.addEventListener('dragend', function(e) {
+      this.classList.remove('dragging');
+      document.querySelectorAll('.skill-order-item').forEach(el => el.classList.remove('drag-over'));
+      dragSkillIdx = null;
+    });
+
+    row.appendChild(item);
+  });
+}
+
+// ===== Pool =====
+function applyPoolFilter() {
+  document.querySelectorAll('.char-card').forEach(card => {
+    const name = card.dataset.name;
+    if (isInLineup(name)) { card.style.display = 'none'; return; }
+    const job = JOB_NAMES[getJobClass(name)] || '';
+    const factions = getCharFactions(name);
+    const jobMatch = poolJobFilter === '全部' || job === poolJobFilter;
+    const factionMatch = poolFactionFilter === '全部' || factions.includes(poolFactionFilter);
+    card.style.display = (jobMatch && factionMatch) ? '' : 'none';
+  });
+}
+
+function initFilters() {
+  // Job filters
+  const jobEl = document.getElementById('poolJobFilters');
+  const jobs = ['全部', ...Object.values(JOB_NAMES)];
+  jobs.forEach(j => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn' + (j === poolJobFilter ? ' active' : '');
+    btn.textContent = j;
+    btn.addEventListener('click', function() {
+      poolJobFilter = j;
+      document.querySelectorAll('#poolJobFilters .filter-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      applyPoolFilter();
+    });
+    jobEl.appendChild(btn);
+  });
+
+  // Faction filters
+  const facEl = document.getElementById('poolFactionFilters');
+  const factions = ['全部', ...FACTIONS];
+  factions.forEach(f => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn' + (f === poolFactionFilter ? ' active' : '');
+    btn.textContent = f;
+    btn.addEventListener('click', function() {
+      poolFactionFilter = f;
+      document.querySelectorAll('#poolFactionFilters .filter-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      applyPoolFilter();
+    });
+    facEl.appendChild(btn);
+  });
+}
+
+function initPool() {
+  CHAR_NAMES.forEach(name => {
+    const card = document.createElement('div');
+    card.className = 'char-card';
+    card.dataset.name = name;
+    card.title = name;
+
+    const bg = document.createElement('img');
+    bg.className = 'char-bg';
+    bg.src = isSSR(name) ? 'SSR.png' : 'SR.png';
+    bg.onerror = function() { this.style.display = 'none'; };
+
+    const avatar = document.createElement('img');
+    avatar.className = 'char-avatar';
+    avatar.src = getSpriteFile(name);
+    avatar.onerror = function() { this.style.display = 'none'; };
+
+    const badge = document.createElement('img');
+    badge.className = 'char-badge';
+    badge.src = 'S6.png';
+    badge.onerror = function() { this.style.display = 'none'; };
+
+    const jobIcon = document.createElement('img');
+    jobIcon.className = 'char-job';
+    jobIcon.src = 'common_Job_' + getJobClass(name) + '.png';
+    jobIcon.onerror = function() { this.style.display = 'none'; };
+
+    card.appendChild(bg);
+    card.appendChild(avatar);
+    card.appendChild(badge);
+    card.appendChild(jobIcon);
+
+    card.draggable = true;
+    card.addEventListener('dragstart', function(e) {
+      if (isInLineup(name)) { e.preventDefault(); return; }
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', name);
+    });
+    card.addEventListener('dragend', function(e) {
+      this.classList.remove('dragging');
+      document.querySelectorAll('.lineup-slot').forEach(s => s.classList.remove('drag-over','forbidden'));
+    });
+
+    card.addEventListener('click', function() {
+      if (isInLineup(name)) return;
+      if (selectedChar === name) {
+        this.classList.remove('selected');
+        selectedChar = null;
+        setStatus('已取消选择');
+      } else {
+        document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
+        this.classList.add('selected');
+        selectedChar = name;
+        setStatus('已选择：' + name + '，点击阵容空位上阵');
+      }
+      document.querySelectorAll('.lineup-slot:not(.filled)').forEach(s => {
+        s.title = selectedChar ? '点击放入 ' + selectedChar : '空位';
+      });
+    });
+    card.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      if (isInLineup(name)) return;
+      if (lineupCount() >= 6) { setStatus('阵容已满（最多6人）'); return; }
+      const idx = lineup.findIndex((item, i) => !item && canPlaceInSlot(name, i));
+      if (idx === -1) { setStatus(getJobClass(name) + '没有合适的空位'); return; }
+      lineup[idx] = name;
+      selectedChar = null;
+      document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
+      renderLineup();
+      applyPoolFilter();
+      setStatus('右键上阵：' + name, true);
+    });
+    poolGrid.appendChild(card);
+  });
+  applyPoolFilter();
+  charCount.textContent = CHAR_NAMES.length + ' 个角色';
+}
+
+// ===== Storage =====
+const STORAGE_KEY = "dragon_lineup";
+
+function save() {
+  try {
+    const dragonLongyu = {};
+    DRAGONS.forEach(d => { dragonLongyu[d.name] = [...d.longyu]; });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      activeDragon: activeDragon ? activeDragon.name : null,
+      lineup: lineup,
+      skillOrder: skillOrder,
+      skillOrderToggles: skillOrderToggles,
+      dragonLongyu: dragonLongyu,
+    }));
+  } catch(e) {}
+}
+
+function loadStorage() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch(e) { return null; }
+}
+
+// ===== Status =====
+let statusTimeout = null;
+function setStatus(msg, isSuccess) {
+  statusbar.textContent = msg;
+  statusbar.className = 'statusbar' + (isSuccess ? ' success' : '');
+  if (statusTimeout) clearTimeout(statusTimeout);
+  statusTimeout = setTimeout(() => {
+    statusbar.className = 'statusbar';
+    statusbar.textContent = '拖拽角色到阵容空槽，或点击选中后点空槽上阵';
+  }, 3000);
+}
+
+// ===== Init =====
+function init() {
+  initDragonList();
+  initFilters();
+  initPool();
+
+  const saved = loadStorage();
+  if (saved) {
+    if (saved.activeDragon) {
+      const cards = document.querySelectorAll('.dragon-card');
+      const idx = DRAGONS.findIndex(d => d.name === saved.activeDragon);
+      if (idx >= 0 && cards[idx]) {
+        cards.forEach(c => c.classList.remove('active'));
+        cards[idx].classList.add('active');
+        activeDragon = DRAGONS[idx];
+      }
+    }
+    if (saved.lineup && saved.lineup.length === 9) {
+      lineup = saved.lineup;
+    }
+    if (saved.skillOrder) skillOrder = saved.skillOrder;
+    if (saved.skillOrderToggles) skillOrderToggles = saved.skillOrderToggles;
+    if (saved.dragonLongyu) {
+      DRAGONS.forEach(d => {
+        if (saved.dragonLongyu[d.name]) d.longyu = [...saved.dragonLongyu[d.name]];
+      });
+    } else if (saved.longyuSelections) {
+      // Legacy migration: saved selections → dragon defaults
+      Object.assign(longyuSelections, saved.longyuSelections);
+      DRAGONS.forEach(d => {
+        if (longyuSelections[d.name]) {
+          d.longyu = [...longyuSelections[d.name]];
+          delete longyuSelections[d.name];
+        }
+      });
+      save();
+    }
+    updateDragonShowcase(activeDragon);
+  }
+  renderLineup();
+  applyPoolFilter();
+}
+
+$('saveBtn').addEventListener('click', function() { save(); setStatus('已保存', true); });
+$('resetBtn').addEventListener('click', function() {
+  if (!confirm('确定重置阵容吗？')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  document.querySelectorAll('.dragon-card').forEach(c => c.classList.remove('active'));
+  document.querySelector('.dragon-card').classList.add('active');
+  activeDragon = DRAGONS[0];
+  updateDragonShowcase(activeDragon);
+  lineup = new Array(9).fill(null);
+  renderLineup();
+  document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
+  selectedChar = null;
+  movingChar = null;
+  applyPoolFilter();
+  setStatus('已重置');
+});
+
+init();
+</script>
+</body>
+</html>
+
+
+

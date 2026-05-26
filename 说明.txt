@@ -1,0 +1,2 @@
+放入新图片后，运行：
+powershell -ExecutionPolicy Bypass -File generate-char-data.ps1
