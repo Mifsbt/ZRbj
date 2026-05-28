@@ -135,6 +135,9 @@ button { font: inherit; border: 0; cursor: pointer; background: none; color: inh
 .modal-item:hover { border-color: var(--accent); }
 .modal-item.active { border-color: #ffd700; }
 .modal-item img { width: 100%; height: auto; display: block; }
+.modal-item .longyu-name { font-size: 13px; color: #fff; text-align: center; padding: 2px 0 4px; line-height: 1.2; font-weight: bold; }
+.longyu-slot { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.longyu-slot .longyu-name { font-size: 13px; color: #fff; text-align: center; line-height: 1.1; max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: bold; }
 
 .lineup-grid-container { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .lineup-col-labels {
@@ -298,6 +301,8 @@ button { font: inherit; border: 0; cursor: pointer; background: none; color: inh
 .pool-scroll::-webkit-scrollbar { width: 6px; }
 .pool-scroll::-webkit-scrollbar-track { background: transparent; }
 .pool-scroll::-webkit-scrollbar-thumb { background: #3a3a5a; border-radius: 3px; }
+.modal-content::-webkit-scrollbar { display: none; }
+.modal-content { -ms-overflow-style: none; scrollbar-width: none; }
 
 .pool-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; align-content: flex-start; }
 
@@ -364,10 +369,10 @@ button { font: inherit; border: 0; cursor: pointer; background: none; color: inh
             </div>
             <div class="showcase-name" id="showcaseName">星辰龙</div>
             <div class="longyu-grid" id="longyuGrid">
-              <img class="longyu-icon" style="display:none" onerror="this.style.display='none'">
-              <img class="longyu-icon" style="display:none" onerror="this.style.display='none'">
-              <img class="longyu-icon" style="display:none" onerror="this.style.display='none'">
-              <img class="longyu-icon" style="display:none" onerror="this.style.display='none'">
+              <div class="longyu-slot"><img class="longyu-icon" style="display:none" onerror="this.style.display='none'"><div class="longyu-name"></div></div>
+              <div class="longyu-slot"><img class="longyu-icon" style="display:none" onerror="this.style.display='none'"><div class="longyu-name"></div></div>
+              <div class="longyu-slot"><img class="longyu-icon" style="display:none" onerror="this.style.display='none'"><div class="longyu-name"></div></div>
+              <div class="longyu-slot"><img class="longyu-icon" style="display:none" onerror="this.style.display='none'"><div class="longyu-name"></div></div>
             </div>
           </div>
           <div class="lineup-grid-container">
@@ -530,29 +535,116 @@ function isSSR(name) {
 
 // ===== Longyu =====
 const LONGYU_FILES = [
-  'MythsMagicIcon_801015.png','MythsMagicIcon_801025.png','MythsMagicIcon_801035.png','MythsMagicIcon_801045.png',
-  'MythsMagicIcon_801055.png','MythsMagicIcon_801065.png','MythsMagicIcon_801075.png','MythsMagicIcon_801086.png',
-  'MythsMagicIcon_801096.png','MythsMagicIcon_801106.png','MythsMagicIcon_801116.png','MythsMagicIcon_801126.png',
-  'MythsMagicIcon_801135.png','MythsMagicIcon_801146.png','MythsMagicIcon_801156.png','MythsMagicIcon_801166.png',
-  'MythsMagicIcon_801176.png','MythsMagicIcon_801186.png',
-  'MythsMagicIcon_802015.png','MythsMagicIcon_802025.png','MythsMagicIcon_802035.png','MythsMagicIcon_802045.png',
-  'MythsMagicIcon_802055.png','MythsMagicIcon_802065.png','MythsMagicIcon_802075.png','MythsMagicIcon_802086.png',
-  'MythsMagicIcon_802096.png','MythsMagicIcon_802106.png','MythsMagicIcon_802116.png','MythsMagicIcon_802126.png',
-  'MythsMagicIcon_802136.png','MythsMagicIcon_802146.png','MythsMagicIcon_802156.png','MythsMagicIcon_802166.png',
-  'MythsMagicIcon_802176.png','MythsMagicIcon_802186.png',
-  'MythsMagicIcon_803015.png','MythsMagicIcon_803025.png','MythsMagicIcon_803035.png','MythsMagicIcon_803045.png',
-  'MythsMagicIcon_803055.png','MythsMagicIcon_803065.png','MythsMagicIcon_803076.png','MythsMagicIcon_803086.png',
-  'MythsMagicIcon_803096.png','MythsMagicIcon_803106.png','MythsMagicIcon_803116.png','MythsMagicIcon_803126.png',
-  'MythsMagicIcon_803136.png','MythsMagicIcon_803146.png','MythsMagicIcon_803156.png','MythsMagicIcon_803166.png',
-  'MythsMagicIcon_803176.png','MythsMagicIcon_803186.png','MythsMagicIcon_803196.png','MythsMagicIcon_803206.png',
-  'MythsMagicIcon_803216.png','MythsMagicIcon_803226.png',
-  'MythsMagicIcon_804016.png','MythsMagicIcon_804036.png','MythsMagicIcon_804046.png','MythsMagicIcon_804056.png',
-  'MythsMagicIcon_804066.png','MythsMagicIcon_804076.png','MythsMagicIcon_804086.png','MythsMagicIcon_804096.png',
-  'MythsMagicIcon_804106.png','MythsMagicIcon_804116.png','MythsMagicIcon_804126.png','MythsMagicIcon_804136.png',
-  'MythsMagicIcon_804146.png','MythsMagicIcon_804156.png','MythsMagicIcon_804166.png','MythsMagicIcon_804176.png',
-  'MythsMagicIcon_804186.png','MythsMagicIcon_804196.png','MythsMagicIcon_804206.png','MythsMagicIcon_804216.png',
+  'MythsMagicIcon_801015.png',
+  'MythsMagicIcon_801025.png',
+  'MythsMagicIcon_801035.png',
+  'MythsMagicIcon_801045.png',
+  'MythsMagicIcon_801055.png',
+  'MythsMagicIcon_801065.png',
+  'MythsMagicIcon_801075.png',
+  'MythsMagicIcon_801086.png',
+  'MythsMagicIcon_801096.png',
+  'MythsMagicIcon_801106.png',
+  'MythsMagicIcon_801116.png',
+  'MythsMagicIcon_801126.png',
+  'MythsMagicIcon_801135.png',
+  'MythsMagicIcon_801146.png',
+  'MythsMagicIcon_801156.png',
+  'MythsMagicIcon_801166.png',
+  'MythsMagicIcon_801176.png',
+  'MythsMagicIcon_801186.png',
+  'MythsMagicIcon_801196.png',
+  'MythsMagicIcon_801206.png',
+  'MythsMagicIcon_801216.png',
+  'MythsMagicIcon_802015.png',
+  'MythsMagicIcon_802025.png',
+  'MythsMagicIcon_802035.png',
+  'MythsMagicIcon_802045.png',
+  'MythsMagicIcon_802055.png',
+  'MythsMagicIcon_802065.png',
+  'MythsMagicIcon_802075.png',
+  'MythsMagicIcon_802086.png',
+  'MythsMagicIcon_802096.png',
+  'MythsMagicIcon_802106.png',
+  'MythsMagicIcon_802116.png',
+  'MythsMagicIcon_802126.png',
+  'MythsMagicIcon_802136.png',
+  'MythsMagicIcon_802146.png',
+  'MythsMagicIcon_802156.png',
+  'MythsMagicIcon_802166.png',
+  'MythsMagicIcon_802176.png',
+  'MythsMagicIcon_802186.png',
+  'MythsMagicIcon_802196.png',
+  'MythsMagicIcon_802206.png',
+  'MythsMagicIcon_802216.png',
+  'MythsMagicIcon_803015.png',
+  'MythsMagicIcon_803025.png',
+  'MythsMagicIcon_803035.png',
+  'MythsMagicIcon_803045.png',
+  'MythsMagicIcon_803055.png',
+  'MythsMagicIcon_803065.png',
+  'MythsMagicIcon_803076.png',
+  'MythsMagicIcon_803086.png',
+  'MythsMagicIcon_803096.png',
+  'MythsMagicIcon_803106.png',
+  'MythsMagicIcon_803116.png',
+  'MythsMagicIcon_803126.png',
+  'MythsMagicIcon_803136.png',
+  'MythsMagicIcon_803146.png',
+  'MythsMagicIcon_803156.png',
+  'MythsMagicIcon_803166.png',
+  'MythsMagicIcon_803176.png',
+  'MythsMagicIcon_803186.png',
+  'MythsMagicIcon_803196.png',
+  'MythsMagicIcon_803206.png',
+  'MythsMagicIcon_803216.png',
+  'MythsMagicIcon_803226.png',
+  'MythsMagicIcon_803236.png',
+  'MythsMagicIcon_803246.png',
+  'MythsMagicIcon_803256.png',
+  'MythsMagicIcon_804016.png',
+  'MythsMagicIcon_804036.png',
+  'MythsMagicIcon_804046.png',
+  'MythsMagicIcon_804056.png',
+  'MythsMagicIcon_804066.png',
+  'MythsMagicIcon_804076.png',
+  'MythsMagicIcon_804086.png',
+  'MythsMagicIcon_804096.png',
+  'MythsMagicIcon_804106.png',
+  'MythsMagicIcon_804116.png',
+  'MythsMagicIcon_804126.png',
+  'MythsMagicIcon_804136.png',
+  'MythsMagicIcon_804146.png',
+  'MythsMagicIcon_804156.png',
+  'MythsMagicIcon_804166.png',
+  'MythsMagicIcon_804176.png',
+  'MythsMagicIcon_804186.png',
+  'MythsMagicIcon_804196.png',
+  'MythsMagicIcon_804206.png',
+  'MythsMagicIcon_804216.png',
   'MythsMagicIcon_804226.png',
+  'MythsMagicIcon_804236.png',
+  'MythsMagicIcon_804246.png',
+  'MythsMagicIcon_804256.png',
 ];
+const LONGYU_NAMES = {
+  'MythsMagicIcon_801015.png':'攻击光环','MythsMagicIcon_801025.png':'物伤光环','MythsMagicIcon_801035.png':'魔伤光环','MythsMagicIcon_801045.png':'攻速光环','MythsMagicIcon_801055.png':'暴击光环','MythsMagicIcon_801065.png':'命中光环',
+  'MythsMagicIcon_801075.png':'破击光环','MythsMagicIcon_801086.png':'极暴光环','MythsMagicIcon_801096.png':'迅捷光环','MythsMagicIcon_801106.png':'迅暴光环','MythsMagicIcon_801116.png':'攻吸光环','MythsMagicIcon_801126.png':'暴速光环',
+  'MythsMagicIcon_801135.png':'奥中光环','MythsMagicIcon_801146.png':'极暴吸光环','MythsMagicIcon_801156.png':'速击光环','MythsMagicIcon_801166.png':'迅魔光环','MythsMagicIcon_801176.png':'暴破光环','MythsMagicIcon_801186.png':'物魔光环',
+  'MythsMagicIcon_801196.png':'奥魔光环','MythsMagicIcon_801206.png':'暴中光环','MythsMagicIcon_801216.png':'破中光环','MythsMagicIcon_802015.png':'物防光环','MythsMagicIcon_802025.png':'魔防光环','MythsMagicIcon_802035.png':'闪避光环',
+  'MythsMagicIcon_802045.png':'格挡光环','MythsMagicIcon_802055.png':'抗暴光环','MythsMagicIcon_802065.png':'治疗光环','MythsMagicIcon_802075.png':'护盾光环','MythsMagicIcon_802086.png':'闪吸光环','MythsMagicIcon_802096.png':'反伤光环',
+  'MythsMagicIcon_802106.png':'物抗光环','MythsMagicIcon_802116.png':'魔挡光环','MythsMagicIcon_802126.png':'闪挡光环','MythsMagicIcon_802136.png':'盾抗光环','MythsMagicIcon_802146.png':'双防抗光环','MythsMagicIcon_802156.png':'盾疗光环',
+  'MythsMagicIcon_802166.png':'挡吸光环','MythsMagicIcon_802176.png':'抗闪光环','MythsMagicIcon_802186.png':'盾挡光环','MythsMagicIcon_802196.png':'闪疗光环','MythsMagicIcon_802206.png':'魔抗光环','MythsMagicIcon_802216.png':'挡抗光环',
+  'MythsMagicIcon_803015.png':'契约咆哮','MythsMagicIcon_803025.png':'魔力咆哮','MythsMagicIcon_803035.png':'强击咆哮','MythsMagicIcon_803045.png':'活力咆哮','MythsMagicIcon_803055.png':'脉冲咆哮','MythsMagicIcon_803065.png':'急救咆哮',
+  'MythsMagicIcon_803076.png':'激荡咆哮','MythsMagicIcon_803086.png':'怒意咆哮','MythsMagicIcon_803096.png':'奥法咆哮','MythsMagicIcon_803106.png':'圣愈咆哮','MythsMagicIcon_803116.png':'轮回咆哮','MythsMagicIcon_803126.png':'惩戒咆哮',
+  'MythsMagicIcon_803136.png':'士气咆哮','MythsMagicIcon_803146.png':'制暴咆哮','MythsMagicIcon_803156.png':'魂佑咆哮','MythsMagicIcon_803166.png':'百骸咆哮','MythsMagicIcon_803176.png':'蓄能咆哮','MythsMagicIcon_803186.png':'奥能咆哮',
+  'MythsMagicIcon_803196.png':'振奋咆哮','MythsMagicIcon_803206.png':'滞时咆哮','MythsMagicIcon_803216.png':'圣盾咆哮','MythsMagicIcon_803226.png':'魂承咆哮','MythsMagicIcon_803236.png':'瓦解咆哮','MythsMagicIcon_803246.png':'恩泽咆哮',
+  'MythsMagicIcon_803256.png':'净愈咆哮','MythsMagicIcon_804016.png':'灼热摧残','MythsMagicIcon_804036.png':'狂野进军','MythsMagicIcon_804046.png':'狂野医疗','MythsMagicIcon_804056.png':'奥法狂热','MythsMagicIcon_804066.png':'低费精通',
+  'MythsMagicIcon_804076.png':'士气治疗','MythsMagicIcon_804086.png':'恩赐祝福','MythsMagicIcon_804096.png':'亡灵低语','MythsMagicIcon_804106.png':'墓园守护','MythsMagicIcon_804116.png':'终极惩戒','MythsMagicIcon_804126.png':'高费克星',
+  'MythsMagicIcon_804136.png':'圣光爆发','MythsMagicIcon_804146.png':'弱点惩戒','MythsMagicIcon_804156.png':'召唤进军','MythsMagicIcon_804166.png':'灵盾转生','MythsMagicIcon_804176.png':'凛冬威压','MythsMagicIcon_804186.png':'秘法之佑',
+  'MythsMagicIcon_804196.png':'愤怒连击','MythsMagicIcon_804206.png':'扰技疲敌','MythsMagicIcon_804216.png':'圣光盾击','MythsMagicIcon_804226.png':'召唤蚀甲','MythsMagicIcon_804236.png':'疾雷幻身','MythsMagicIcon_804246.png':'奥法传承',
+  'MythsMagicIcon_804256.png':'坚毅不倒',
+};
 // Group by position: 801→slot0, 802→slot1, 803→slot2, 804→slot3
 const LONGYU_BY_SLOT = [[],[],[],[]];
 LONGYU_FILES.forEach(f => {
@@ -620,12 +712,15 @@ function updateDragonShowcase(d) {
   img.onerror = function() { this.src = SHOWCASE_FALLBACK; };
   name.textContent = d.name;
   // Update longyu icons
-  document.querySelectorAll('#longyuGrid .longyu-icon').forEach((el, i) => {
+  document.querySelectorAll('#longyuGrid .longyu-slot').forEach((slot, i) => {
     const file = getLongyuSelection(d, i);
-    el.src = 'longyu/' + file;
-    el.style.display = '';
-    el.title = file;
-    el.onclick = function(e) { openLongyuModal(d, i); e.stopPropagation(); };
+    const img = slot.querySelector('.longyu-icon');
+    const name = slot.querySelector('.longyu-name');
+    img.src = 'longyu/' + file;
+    img.style.display = '';
+    img.title = file;
+    img.onclick = function(e) { openLongyuModal(d, i); e.stopPropagation(); };
+    name.textContent = LONGYU_NAMES[file] || file;
   });
 }
 
@@ -659,6 +754,10 @@ function openLongyuModal(dragon, slotIdx) {
     img.onerror = function() { this.style.display = 'none'; };
     img.draggable = false;
     item.appendChild(img);
+    const name = document.createElement('div');
+    name.className = 'longyu-name';
+    name.textContent = LONGYU_NAMES[file] || file;
+    item.appendChild(name);
     item.onclick = function() {
       setLongyuSelection(dragon, slotIdx, file);
       updateDragonShowcase(dragon);
