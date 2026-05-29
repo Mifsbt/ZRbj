@@ -88,10 +88,11 @@ button { font: inherit; border: 0; cursor: pointer; background: none; color: inh
   padding: 16px;
 }
 .lineup-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; letter-spacing: 4px; }
-.lineup-content { display: flex; align-items: center; gap: 24px; }
-.dragon-showcase {
-  display: flex; flex-direction: column; gap: 8px;
-}
+.lineup-content { display: grid; grid-template-columns: auto 1fr; column-gap: 24px; row-gap: 0; }
+.dragon-showcase { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 8px; justify-self: center; align-self: end; }
+.showcase-left { display: flex; flex-direction: column; align-items: center; }
+.lineup-grid-container { grid-column: 2; grid-row: 1 / 3; }
+.longyu-grid { grid-column: 1; grid-row: 2; display: flex; justify-content: center; align-items: center; gap: 0px; }
 .dragon-showcase .showcase-img {
   width: 100%; height: 100%; object-fit: cover; display: block;
 }
@@ -103,7 +104,7 @@ button { font: inherit; border: 0; cursor: pointer; background: none; color: inh
   align-self: center;
 }
 .dragon-showcase .showcase-name { font-size: 15px; font-weight: 700; color: var(--accent); align-self: center; }
-.longyu-grid { display: flex; justify-content: flex-end; align-items: center; gap: 0px; margin-top: 4px; }
+.longyu-grid { display: flex; justify-content: center; align-items: center; gap: 0px; }
 .longyu-grid .longyu-icon {
   width: 70px; height: 70px; border-radius: 6px;
   object-fit: cover; display: block; background: #1a1a30;
@@ -345,6 +346,39 @@ button { font: inherit; border: 0; cursor: pointer; background: none; color: inh
   border-top: 1px solid var(--border); flex-shrink: 0;
 }
 .statusbar.success { color: #69DB7C; }
+
+/* ========== Mobile ========== */
+@media (max-width: 768px) {
+  .app { flex-direction: column; }
+  .left-panel { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .left-body { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
+  .dragon-scroll { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 8px 10px 4px; border-right: 0; border-bottom: 1px solid var(--border); overflow: visible; height: auto; width: 100%; }
+  .dragon-scroll::-webkit-scrollbar { height: 4px; }
+  .dragon-section-title { display: none; }
+  .dragon-card { width: auto; margin-bottom: 0; padding: 4px 2px; min-width: 0; }
+  .dragon-img-wrap { height: 40px; }
+  .dragon-card .name { font-size: 9px; }
+  .lineup-area { padding: 5px 8px 0; flex: none; }
+  .lineup-content { display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
+  .dragon-showcase { flex-direction: column; align-items: center; gap: 4px; align-self: center; }
+  .showcase-left { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .showcase-wrapper { width: 100px; height: 125px; }
+  .dragon-showcase .showcase-name { font-size: 11px; }
+  .longyu-grid { flex-direction: row; gap: 8px; justify-content: center; width: 100%; }
+  .longyu-grid .longyu-icon { width: 60px; height: 60px; }
+  .longyu-slot .longyu-name { font-size: 10px; max-width: 60px; }
+  .lineup-col-labels { grid-template-columns: repeat(3, 90px); gap: 6px; }
+  .lineup-grid { grid-template-columns: repeat(3, 90px); grid-template-rows: repeat(3, 90px); gap: 6px; }
+  .lineup-slot { border-radius: 8px; }
+  .skill-order-section { display: none; }
+  .right-panel { flex: 1; min-height: 120px; border-left: 0; overflow-y: auto; }
+  .pool-grid { grid-template-columns: repeat(6, 1fr); gap: 4px; }
+  .pool-filters { padding: 6px 8px 2px; gap: 3px; }
+  .filter-btn { font-size: 10px; padding: 3px 8px; }
+  .pool-scroll { padding: 6px 8px 10px; }
+  .modal-grid { grid-template-columns: repeat(6, 1fr); gap: 4px; }
+  .modal-content { max-width: 95vw; padding: 8px; }
+}
 </style>
 </head>
 <body>
@@ -358,21 +392,17 @@ button { font: inherit; border: 0; cursor: pointer; background: none; color: inh
       <button class="btn" id="saveBtn">保存</button>
       <button class="btn" id="resetBtn">重置</button>
     </div>
-    <div class="left-body">
+    <div class="left-body" id="leftBody">
       <div class="dragon-scroll" id="dragonList"></div>
-      <div class="lineup-area">
+      <div class="lineup-area" id="lineupView">
         <div class="lineup-title"></div>
         <div class="lineup-content">
           <div class="dragon-showcase" id="dragonShowcase">
-            <div class="showcase-wrapper">
-              <img class="showcase-img" id="showcaseImg" src="" alt="">
-            </div>
-            <div class="showcase-name" id="showcaseName">星辰龙</div>
-            <div class="longyu-grid" id="longyuGrid">
-              <div class="longyu-slot"><img class="longyu-icon" style="display:none" onerror="this.style.display='none'"><div class="longyu-name"></div></div>
-              <div class="longyu-slot"><img class="longyu-icon" style="display:none" onerror="this.style.display='none'"><div class="longyu-name"></div></div>
-              <div class="longyu-slot"><img class="longyu-icon" style="display:none" onerror="this.style.display='none'"><div class="longyu-name"></div></div>
-              <div class="longyu-slot"><img class="longyu-icon" style="display:none" onerror="this.style.display='none'"><div class="longyu-name"></div></div>
+            <div class="showcase-left">
+              <div class="showcase-wrapper">
+                <img class="showcase-img" id="showcaseImg" src="" alt="">
+              </div>
+              <div class="showcase-name" id="showcaseName">星辰龙</div>
             </div>
           </div>
           <div class="lineup-grid-container">
@@ -383,8 +413,14 @@ button { font: inherit; border: 0; cursor: pointer; background: none; color: inh
             </div>
             <div class="lineup-grid" id="lineupGrid"></div>
           </div>
+          <div class="longyu-grid" id="longyuGrid">
+          <div class="longyu-slot"><img class="longyu-icon" style="display:none" onerror="this.style.display='none'"><div class="longyu-name"></div></div>
+          <div class="longyu-slot"><img class="longyu-icon" style="display:none" onerror="this.style.display='none'"><div class="longyu-name"></div></div>
+          <div class="longyu-slot"><img class="longyu-icon" style="display:none" onerror="this.style.display='none'"><div class="longyu-name"></div></div>
+          <div class="longyu-slot"><img class="longyu-icon" style="display:none" onerror="this.style.display='none'"><div class="longyu-name"></div></div>
+          </div>
         </div>
-        <div class="skill-order-section" id="skillOrderSection">
+      <div class="skill-order-section" id="skillOrderSection">
           <div class="skill-order-header">
             <span class="skill-order-title">奥义顺序</span>
           </div>
@@ -393,8 +429,7 @@ button { font: inherit; border: 0; cursor: pointer; background: none; color: inh
       </div>
     </div>
   </div>
-
-  <div class="right-panel">
+  <div class="right-panel" id="poolView">
     <div class="topbar">
       <div class="pool-title">角色池</div>
       <span style="font-size:11px;color:var(--text2);margin-left:auto;">作者：番薯不甜</span>
@@ -681,6 +716,19 @@ function getSlotRestriction(col) {
   return '后排';
 }
 
+function isMobile() { return window.innerWidth <= 768; }
+
+function adjustLayout() {
+  const rp = document.getElementById('poolView');
+  const lb = document.getElementById('leftBody');
+  if (isMobile()) {
+    if (rp.parentElement !== lb) lb.appendChild(rp);
+  } else {
+    const app = document.querySelector('.app');
+    if (rp.parentElement !== app) app.appendChild(rp);
+  }
+}
+
 const $ = id => document.getElementById(id);
 const poolGrid = $('poolGrid');
 const lineupGrid = $('lineupGrid');
@@ -870,6 +918,29 @@ function renderLineup() {
         this.classList.remove('dragging');
         document.querySelectorAll('.lineup-slot').forEach(s => s.classList.remove('drag-over'));
       });
+      // Touch long-press for mobile move mode
+      let lpTimer = null;
+      slot.addEventListener('touchstart', function(e) {
+        if (!isMobile()) return;
+        lpTimer = setTimeout(() => {
+          this.classList.add('lp-active');
+          const idx = parseInt(this.dataset.idx);
+          const cur = lineup[idx];
+          if (cur && !movingChar) {
+            movingChar = cur;
+            document.querySelectorAll('.lineup-slot').forEach(s => {
+              const si = parseInt(s.dataset.idx);
+              if (si !== idx && canPlaceInSlot(cur, si)) {
+                s.style.boxShadow = 'inset 0 0 20px rgba(108,108,255,0.2)';
+              }
+            });
+            this.style.borderColor = '#ffd700';
+            setStatus('长按进入移动模式：点击其他空槽放置 ' + cur);
+          }
+        }, 500);
+      });
+      slot.addEventListener('touchmove', function(e) { clearTimeout(lpTimer); });
+      slot.addEventListener('touchend', function(e) { clearTimeout(lpTimer); });
     } else {
       const col = i % 3;
       slot.innerHTML = '<div class="slot-empty-icon" style="font-size:40px;color:var(--text2);opacity:0.3;">+</div>';
@@ -949,49 +1020,39 @@ function renderLineup() {
     });
 
     slot.addEventListener('click', function() {
+      if (this.classList.contains('lp-active')) {
+        this.classList.remove('lp-active');
+        return;
+      }
       const idx = parseInt(this.dataset.idx);
       const current = lineup[idx];
 
       if (movingChar) {
-        // Placing movingChar into this slot
         if (current) {
-          // Swap
           if (!canPlaceInSlot(movingChar, idx)) {
             setStatus(JOB_NAMES[getJobClass(movingChar)] + '不能放在' + getSlotRestriction(idx % 3));
-            movingChar = null;
-            renderLineup();
-            return;
+            movingChar = null; renderLineup(); return;
           }
           const fromIdx = lineup.indexOf(movingChar);
           if (fromIdx === idx) { movingChar = null; renderLineup(); return; }
           if (!canPlaceInSlot(current, fromIdx)) {
             setStatus(JOB_NAMES[getJobClass(current)] + '不能放在' + getSlotRestriction(fromIdx % 3));
-            movingChar = null;
-            renderLineup();
-            return;
+            movingChar = null; renderLineup(); return;
           }
-          lineup[fromIdx] = current;
-          lineup[idx] = movingChar;
+          lineup[fromIdx] = current; lineup[idx] = movingChar;
         } else {
           if (!canPlaceInSlot(movingChar, idx)) {
             setStatus(JOB_NAMES[getJobClass(movingChar)] + '不能放在' + getSlotRestriction(idx % 3));
-            movingChar = null;
-            renderLineup();
-            return;
+            movingChar = null; renderLineup(); return;
           }
           const fromIdx = lineup.indexOf(movingChar);
-          lineup[fromIdx] = null;
-          lineup[idx] = movingChar;
+          lineup[fromIdx] = null; lineup[idx] = movingChar;
         }
-        movingChar = null;
-        renderLineup();
-        applyPoolFilter();
-        return;
+        movingChar = null; renderLineup(); applyPoolFilter(); return;
       }
 
       if (current) {
         if (selectedChar) {
-          // Try to replace with selectedChar from pool
           if (isInLineup(selectedChar)) { setStatus('该角色已上阵'); return; }
           if (!canPlaceInSlot(selectedChar, idx)) {
             setStatus(JOB_NAMES[getJobClass(selectedChar)] + '不能放在' + getSlotRestriction(idx % 3));
@@ -999,22 +1060,12 @@ function renderLineup() {
           }
           lineup[idx] = selectedChar;
           document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
-          selectedChar = null;
-          renderLineup();
-          applyPoolFilter();
+          selectedChar = null; renderLineup(); applyPoolFilter();
           setStatus('已替换为 ' + lineup[idx]);
         } else {
-          // Start moving this character
-          movingChar = current;
-          // Highlight all valid slots
-          document.querySelectorAll('.lineup-slot').forEach(s => {
-            const si = parseInt(s.dataset.idx);
-            if (si !== idx && canPlaceInSlot(current, si)) {
-              s.style.boxShadow = 'inset 0 0 20px rgba(108,108,255,0.2)';
-            }
-          });
-          this.style.borderColor = '#ffd700';
-          setStatus('点击其他空槽放置 ' + current + '，或再次取消');
+          lineup[idx] = null;
+          renderLineup(); applyPoolFilter();
+          setStatus('已移除 ' + current);
         }
       } else if (selectedChar) {
         if (isInLineup(selectedChar)) { setStatus('该角色已上阵'); return; }
@@ -1025,14 +1076,8 @@ function renderLineup() {
         }
         lineup[idx] = selectedChar;
         document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
-        selectedChar = null;
-        renderLineup();
-        applyPoolFilter();
+        selectedChar = null; renderLineup(); applyPoolFilter();
         setStatus('已上阵 ' + lineup[idx]);
-      } else if (movingChar) {
-        movingChar = null;
-        renderLineup();
-        setStatus('已取消');
       }
     });
 
@@ -1359,7 +1404,10 @@ function init() {
   }
   renderLineup();
   applyPoolFilter();
+  adjustLayout();
 }
+
+window.addEventListener('resize', adjustLayout);
 
 $('saveBtn').addEventListener('click', function() { save(); setStatus('已保存', true); });
 $('resetBtn').addEventListener('click', function() {
