@@ -6,283 +6,429 @@
 <title>阵容编辑器</title>
 <style>
 :root {
-  --bg: #0d0d1a;
-  --surface: #16162e;
-  --surface2: #1e1e3a;
-  --border: #2a2a50;
-  --text: #e8e8f0;
-  --text2: #8888aa;
-  --accent: #6c6cff;
-  --danger: #ff4466;
+  --bg: #0d0a07;
+  --surface: #1a1410;
+  --surface2: #241c15;
+  --surface3: #332a20;
+  --border: #3d3328;
+  --border-glow: #6b5538;
+  --text: #f0e8d8;
+  --text2: #a89878;
+  --text3: #6b5d48;
+  --accent: #d4a84a;
+  --accent2: #e8c068;
+  --accent-glow: rgba(212,168,74,0.4);
+  --danger: #c8392f;
+  --success: #7a9a4a;
+  --gold: #e8c068;
+  --crimson: #c8392f;
+  --jade: #5a9a8a;
   font-family: "Microsoft YaHei","PingFang SC",system-ui,sans-serif;
   font-size: 13px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
 button { font: inherit; border: 0; cursor: pointer; background: none; color: inherit; }
+input { font: inherit; }
 
-.app { display: flex; height: 100vh; }
+/* Animated background */
+body::before {
+  content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background:
+    radial-gradient(ellipse at 15% 30%, rgba(212,168,74,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 15%, rgba(180,130,50,0.1) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 85%, rgba(160,110,40,0.08) 0%, transparent 45%),
+    radial-gradient(ellipse at 60% 50%, rgba(140,90,30,0.05) 0%, transparent 60%);
+  pointer-events: none; z-index: 0;
+  animation: bgPulse 6s ease-in-out infinite alternate;
+}
+body::after {
+  content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.5;
+}
+@keyframes bgPulse {
+  0% { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.02); }
+}
+
+.app { display: flex; height: 100vh; position: relative; z-index: 1; }
 
 /* ========== Top Bar ========== */
 .topbar {
   display: flex; align-items: center; gap: 10px;
-  padding: 10px 16px; background: var(--surface);
-  border-bottom: 1px solid var(--border); flex-shrink: 0;
+  padding: 10px 16px;
+  background: linear-gradient(180deg, rgba(20,16,12,0.98) 0%, rgba(20,16,12,0.92) 100%);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  position: relative;
 }
-.topbar h1 { font-size: 16px; font-weight: 800; margin-right: auto; }
+.topbar::after {
+  content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+}
+.topbar h1 {
+  font-size: 16px; font-weight: 800; margin-right: auto; letter-spacing: 2px;
+  background: linear-gradient(135deg, var(--accent2), #f0d898);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 .topbar .sub { font-size: 11px; color: var(--text2); }
 .btn {
   display: inline-flex; align-items: center; justify-content: center;
-  height: 30px; padding: 0 14px; border-radius: 6px;
+  height: 30px; padding: 0 14px; border-radius: 8px;
   font-size: 12px; font-weight: 700; gap: 4px;
-  background: var(--surface2); color: var(--text);
-  border: 1px solid var(--border); transition: all 0.15s;
+  background: linear-gradient(135deg, var(--surface2), var(--surface3));
+  color: var(--text); border: 1px solid var(--border);
+  transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+  position: relative; overflow: hidden;
 }
-.btn:hover { background: #2a2a50; border-color: #4a4a7a; }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.btn.primary:hover { filter: brightness(1.15); }
+.btn::before {
+  content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  transition: left 0.5s;
+}
+.btn:hover::before { left: 100%; }
+.btn:hover { border-color: var(--border-glow); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+.btn:active { transform: translateY(0); }
+.btn.primary {
+  background: linear-gradient(135deg, var(--accent), #a8801e);
+  border-color: var(--accent2); color: #1a1410;
+  box-shadow: 0 0 20px rgba(212,168,74,0.3);
+}
+.btn.primary:hover {
+  filter: brightness(1.2);
+  box-shadow: 0 0 35px rgba(212,168,74,0.5);
+}
+.btn.accent-outline {
+  background: transparent;
+  border-color: var(--accent);
+  color: var(--accent2);
+}
+.btn.accent-outline:hover {
+  background: rgba(212,168,74,0.1);
+}
 
 /* ========== Left Side ========== */
-.left-panel { flex: 0 0 75%; display: flex; flex-direction: column; min-width: 0; }
-.left-body { flex: 1; display: flex; min-height: 0; }
+.left-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.left-body { flex: 1; display: flex; min-height: 0; position: relative; }
 
-/* ========== Dragon List ========== */
-.dragon-scroll {
-  width: 200px; flex-shrink: 0;
-  overflow-y: auto; padding: 10px 10px 16px;
-  border-right: 1px solid var(--border);
+/* ========== Infinite Canvas ========== */
+.canvas-container {
+  flex: 1; position: relative; overflow: hidden;
+  background:
+    radial-gradient(ellipse at 30% 40%, rgba(212,168,74,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 60%, rgba(160,110,40,0.04) 0%, transparent 50%),
+    var(--bg);
+  cursor: grab;
 }
-.dragon-scroll::-webkit-scrollbar { width: 5px; }
-.dragon-scroll::-webkit-scrollbar-track { background: transparent; }
-.dragon-scroll::-webkit-scrollbar-thumb { background: #3a3a5a; border-radius: 3px; }
-.dragon-section-title {
-  font-size: 12px; font-weight: 700; margin-bottom: 8px;
-  color: var(--text2); text-align: center; letter-spacing: 2px;
+.canvas-container.grabbing { cursor: grabbing; }
+.canvas-container.placing { cursor: crosshair; }
+.canvas-inner {
+  position: absolute; top: 0; left: 0;
+  transform-origin: 0 0;
 }
-.dragon-card {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 5px 6px 4px;
-  border-radius: 8px;
-  background: var(--surface);
-  border: 2px solid var(--border);
-  cursor: pointer;
-  transition: all 0.15s;
-  margin-bottom: 4px;
+/* Grid dots background */
+.canvas-grid {
+  position: absolute; top: -10000px; left: -10000px;
+  width: 20000px; height: 20000px;
+  background-image: radial-gradient(circle, rgba(212,168,74,0.22) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
 }
-.dragon-card:hover { border-color: #4a4a7a; background: #1a1a3a; }
-.dragon-card.active { border-color: var(--accent); box-shadow: 0 0 10px rgba(108,108,255,0.15); background: #1c1c3e; }
-.dragon-card img {
-  width: 100%; height: 100%;
-  object-fit: cover; display: block;
-}
-.dragon-img-wrap {
-  width: 100%; height: 115px; border-radius: 4px; overflow: hidden;
-  background: url('bg_SSR_custom.png') center / 120% no-repeat;
-}
-.dragon-card .name { font-size: 11px; font-weight: 700; margin-top: 3px; text-align: center; line-height: 1.2; }
 
-/* ========== Lineup Area ========== */
-.lineup-area {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+/* Canvas controls */
+.canvas-controls {
+  position: absolute; top: 12px; right: 16px;
+  display: flex; flex-direction: column; gap: 16px;
+  z-index: 100;
+}
+.canvas-controls .cc-btn {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: rgba(20,16,12,0.85); backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: var(--text2);
+  transition: all 0.2s;
+}
+.canvas-controls .cc-btn:hover {
+  border-color: var(--accent); color: var(--accent2);
+  background: rgba(212,168,74,0.1);
+}
+.canvas-controls .cc-btn.active { background: rgba(212,168,74,0.15); border-color: var(--accent); color: var(--accent2); }
+.canvas-info {
+  position: absolute; bottom: 12px; left: 12px;
+  font-size: 11px; color: var(--text3);
+  z-index: 100; pointer-events: none;
+  background: rgba(20,16,12,0.7); padding: 4px 10px; border-radius: 6px;
+}
+
+/* Trash zone: drag custom images here to delete */
+.trash-zone {
+  position: absolute; bottom: 12px; right: 16px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 56px; height: 56px; border-radius: 12px;
+  background: rgba(20,16,12,0.85); backdrop-filter: blur(8px);
+  border: 1.5px dashed var(--border);
+  color: var(--text3); cursor: default;
+  z-index: 100; transition: all 0.2s;
+  user-select: none;
+}
+.trash-zone .trash-icon { font-size: 22px; line-height: 1; }
+.trash-zone .trash-label { font-size: 9px; font-weight: 700; letter-spacing: 1px; margin-top: 2px; }
+.trash-zone.trash-active { border-color: var(--danger); color: var(--danger); border-style: solid; background: rgba(200,57,47,0.12); box-shadow: 0 0 20px rgba(200,57,47,0.5); transform: scale(1.1); }
+.trash-zone.trash-hover { border-color: var(--danger); color: var(--danger); background: rgba(200,57,47,0.18); box-shadow: 0 0 30px rgba(200,57,47,0.7); transform: scale(1.18); }
+
+/* ========== Lineup Card on Canvas ========== */
+.lineup-card {
+  position: absolute;
+  background: linear-gradient(160deg, rgba(26,20,16,0.97) 0%, rgba(36,28,21,0.95) 50%, rgba(32,24,16,0.97) 100%);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--border-glow);
+  border-radius: 16px;
   padding: 16px;
+  min-width: 520px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 30px rgba(212,168,74,0.15), inset 0 1px 0 rgba(255,255,255,0.05), inset 0 0 0 1px rgba(212,168,74,0.07);
+  transition: box-shadow 0.3s, border-color 0.3s;
+  user-select: none;
 }
-.lineup-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; letter-spacing: 4px; }
-.lineup-content { display: grid; grid-template-columns: auto 1fr; column-gap: 24px; row-gap: 0; }
-.dragon-showcase { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; gap: 8px; justify-self: center; align-self: end; }
-.showcase-left { display: flex; flex-direction: column; align-items: center; }
-.lineup-grid-container { grid-column: 2; grid-row: 1 / 3; }
-.longyu-grid { grid-column: 1; grid-row: 2; display: flex; justify-content: center; align-items: center; gap: 0px; }
-.dragon-showcase .showcase-img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
+.lineup-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.7), 0 0 40px rgba(212,168,74,0.2), inset 0 1px 0 rgba(255,255,255,0.06), inset 0 0 0 1px rgba(212,168,74,0.12);
 }
-.showcase-wrapper {
-  width: 160px; height: 210px; border-radius: 12px; overflow: hidden;
+.lineup-card.selected-card {
+  border-color: var(--accent);
+  box-shadow: 0 0 25px var(--accent-glow), 0 8px 32px rgba(0,0,0,0.4);
+}
+.lineup-card.dragging-card { opacity: 0.85; }
+
+.lc-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.lc-drag-handle {
+  cursor: move; color: var(--text3); font-size: 20px;
+  padding: 8px 8px; border-radius: 4px;
+  transition: color 0.15s;
+}
+.lc-drag-handle:hover { color: var(--accent2); }
+.lc-title-input {
+  background: transparent; border: none; color: var(--text);
+  font-size: 14px; font-weight: 700; width: 100px;
+  outline: none; padding: 2px 6px; border-radius: 4px;
+  transition: background 0.15s;
+}
+.lc-title-input:hover { background: rgba(255,255,255,0.04); }
+.lc-title-input:focus { background: rgba(212,168,74,0.08); }
+.lc-dragon-select {
+  height: 26px; padding: 0 8px; border-radius: 6px;
+  background: var(--surface2); color: var(--text);
+  border: 1px solid var(--border); font-size: 11px; font-weight: 600;
+  outline: none; cursor: pointer;
+}
+.lc-dragon-select:focus { border-color: var(--accent); }
+.lc-actions { display: flex; gap: 4px; margin-left: auto; }
+.lc-btn {
+  width: 26px; height: 26px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text2); font-size: 14px;
+  transition: all 0.2s;
+}
+.lc-btn:hover { border-color: var(--accent); color: var(--accent2); background: rgba(212,168,74,0.1); }
+.lc-btn.delete:hover { border-color: var(--danger); color: var(--danger); background: rgba(200,57,47,0.1); }
+
+.lc-body { display: flex; gap: 16px; align-items: flex-start; }
+
+/* Dragon showcase in card */
+.lc-showcase { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; margin-top: 40px; }
+.lc-showcase-wrapper {
+  width: 130px; height: 170px; border-radius: 10px; overflow: hidden;
   background: url('bg_SSR_custom.png') center / 120% no-repeat;
-  border: 3px solid var(--accent);
-  box-shadow: 0 0 20px rgba(108,108,255,0.3);
-  align-self: center;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 20px var(--accent-glow);
+  position: relative;
+  animation: dragonBreath 3s ease-in-out infinite alternate;
 }
-.dragon-showcase .showcase-name { font-size: 15px; font-weight: 700; color: var(--accent); align-self: center; }
-.longyu-grid { display: flex; justify-content: center; align-items: center; gap: 0px; }
-.longyu-grid .longyu-icon {
-  width: 70px; height: 70px; border-radius: 6px;
-  object-fit: cover; display: block; background: #1a1a30;
-  border: 1px solid var(--border); cursor: pointer;
+@keyframes dragonBreath {
+  0% { box-shadow: 0 0 15px rgba(212,168,74,0.2); }
+  100% { box-shadow: 0 0 30px rgba(212,168,74,0.45), 0 0 60px rgba(212,168,74,0.1); }
 }
-.longyu-grid .longyu-icon:hover { border-color: var(--accent); }
+.lc-showcase-wrapper img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lc-showcase-name { font-size: 12px; font-weight: 700; color: var(--accent2); }
 
-/* Longyu Modal */
-.modal-overlay {
-  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.65); display: flex;
-  align-items: center; justify-content: center; z-index: 9999;
-}
-.modal-content {
+/* Longyu row in card */
+.lc-longyu { display: flex; gap: 6px; justify-content: center; }
+.lc-longyu-slot { display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
+.lc-longyu-slot img {
+  width: 55px; height: 55px; border-radius: 6px; object-fit: cover;
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: 12px; padding: 20px;
-  max-width: 520px; max-height: 80vh; overflow-y: auto;
-  box-shadow: 0 0 30px rgba(0,0,0,0.5);
+  transition: all 0.2s;
 }
-.modal-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--accent); text-align: center; }
-.modal-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+.lc-longyu-slot img:hover { border-color: var(--accent); transform: scale(1.08); box-shadow: 0 0 10px var(--accent-glow); }
+.lc-longyu-name {
+  font-size: 10px; color: var(--text2); text-align: center;
+  max-width: 55px; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; font-weight: 600; line-height: 1.1;
 }
-.modal-item {
-  cursor: pointer; border: 2px solid transparent;
-  border-radius: 8px; overflow: hidden; transition: border-color 0.15s;
-  background: #1a1a30;
-}
-.modal-item:hover { border-color: var(--accent); }
-.modal-item.active { border-color: #ffd700; }
-.modal-item img { width: 100%; height: auto; display: block; }
-.modal-item .longyu-name { font-size: 13px; color: #fff; text-align: center; padding: 2px 0 4px; line-height: 1.2; font-weight: bold; }
-.longyu-slot { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.longyu-slot .longyu-name { font-size: 13px; color: #fff; text-align: center; line-height: 1.1; max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: bold; }
 
-.lineup-grid-container { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.lineup-col-labels {
-  display: grid;
-  grid-template-columns: repeat(3, 140px);
-  gap: 10px;
-  margin-bottom: 2px;
+/* Lineup grid in card */
+.lc-lineup { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.lc-col-labels {
+  display: grid; grid-template-columns: repeat(3, 100px); gap: 6px; margin-bottom: 2px;
 }
-.lineup-col-labels .col-label {
-  text-align: center; font-size: 12px; font-weight: 700;
-  padding: 3px 0; border-radius: 6px; letter-spacing: 2px;
+.lc-col-label {
+  text-align: center; font-size: 11px; font-weight: 700;
+  padding: 2px 0; border-radius: 4px; letter-spacing: 1px;
 }
-.col-label.front { color: #ff6b6b; background: rgba(255,107,107,0.1); }
-.col-label.mid { color: #ffd43b; background: rgba(255,212,59,0.1); }
-.col-label.back { color: #74b9ff; background: rgba(116,185,255,0.1); }
+.lc-col-label.front { color: #d94a3d; background: rgba(217,74,61,0.1); }
+.lc-col-label.mid { color: #e8c068; background: rgba(232,192,104,0.1); }
+.lc-col-label.back { color: #5a9a8a; background: rgba(90,154,138,0.1); }
 
-.lineup-grid {
+.lc-grid {
   display: grid;
-  grid-template-columns: repeat(3, 140px);
-  grid-template-rows: repeat(3, 140px);
-  gap: 10px;
+  grid-template-columns: repeat(3, 100px);
+  grid-template-rows: repeat(3, 100px);
+  gap: 6px;
 }
-.lineup-slot {
+.lc-slot {
   position: relative;
   background: var(--surface);
   border: 2px dashed var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
 }
-.lineup-slot:hover { border-color: #4a4a7a; background: #1a1a3a; }
-.lineup-slot.filled { border-style: solid; border-color: var(--border); }
-.lineup-slot.filled:hover { border-color: var(--accent); }
-.lineup-slot.drag-over { border-color: #ffd700; background: rgba(255,215,0,0.1); box-shadow: inset 0 0 20px rgba(255,215,0,0.15); }
-.lineup-slot.forbidden { border-color: var(--danger); background: rgba(255,68,102,0.08); }
-.lineup-slot .slot-char-bg {
-  position: absolute; top: 0; left: 0;
-  width: 100%; height: 100%; object-fit: cover;
-  display: block; pointer-events: none;
-  border-radius: 10px;
+.lc-slot:hover { border-color: var(--accent); background: var(--surface2); box-shadow: 0 0 16px var(--accent-glow); }
+.lc-slot .slot-empty-icon { font-size: 32px; color: var(--text3); opacity: 0.2; transition: opacity 0.3s; }
+.lc-slot:hover .slot-empty-icon { opacity: 0.5; }
+.lc-slot.filled { border-style: solid; border-color: rgba(212,168,74,0.25); }
+.lc-slot.filled:hover { border-color: var(--accent); box-shadow: 0 0 16px var(--accent-glow); }
+.lc-slot.drag-over { border-color: var(--gold); background: rgba(255,215,0,0.06); box-shadow: inset 0 0 20px rgba(255,215,0,0.1); }
+.lc-slot.forbidden { border-color: var(--danger); background: rgba(200,57,47,0.06); }
+.lc-slot .slot-char-bg {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  object-fit: cover; display: block; pointer-events: none; border-radius: 8px;
 }
-.lineup-slot .slot-char-img {
-  position: relative; z-index: 1;
-  width: 100%; height: 100%;
-  object-fit: contain; display: block;
-  padding: 4%;
-  pointer-events: none;
+.lc-slot .slot-char-img {
+  position: relative; z-index: 1; width: 100%; height: 100%;
+  object-fit: contain; display: block; padding: 4%; pointer-events: none;
 }
-.lineup-slot .slot-char-badge {
+.lc-slot .slot-char-badge {
   position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-  z-index: 2; width: 50%; height: auto;
+  z-index: 2; width: 50%; height: auto; display: block; pointer-events: none;
+}
+.lc-slot .slot-char-job {
+  position: absolute; top: 0; left: 0; z-index: 3; width: 28%; height: auto;
   display: block; pointer-events: none;
 }
-.lineup-slot .slot-char-job {
-  position: absolute; top: 0; left: 0;
-  z-index: 3; width: 28%; height: auto;
-  display: block; pointer-events: none;
+
+/* Skill order in card */
+.lc-skill-order {
+  padding: 0 16px;
 }
-/* ========== Skill Order ========== */
-.skill-order-section {
-  width: 100%;   max-width: 740px; margin-top: 16px;
-  background: var(--surface); border-radius: 10px;
-  border: 1px solid var(--border); padding: 14px 16px;
+.lc-so-header {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
 }
-.skill-order-header {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+.lc-so-title { font-size: 12px; font-weight: 700; color: var(--text2); letter-spacing: 1px; }
+.lc-so-row {
+  display: flex; gap: 8px;
+  justify-content: center; align-items: center;
+  flex-wrap: nowrap;
 }
-.skill-order-title { font-size: 14px; font-weight: 700; }
-.skill-order-hint { font-size: 11px; color: var(--text2); margin-left: auto; }
-.skill-order-row {
-  display: flex; gap: 8px; min-height: 100px;
-  justify-content: center; align-items: center; flex-wrap: wrap;
-}
-.skill-order-row.empty { justify-content: center; color: var(--text2); font-size: 12px; min-height: 137px; }
-.skill-order-item {
-  display: flex; flex-direction: column; align-items: center; gap: 15px;
+.lc-so-row.empty { justify-content: center; color: var(--text3); font-size: 11px; }
+.lc-so-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
   cursor: grab; user-select: none; flex-shrink: 0;
 }
-.skill-order-item:hover .so-icon-wrapper { border-color: var(--accent); }
-.skill-order-item.dragging { opacity: 0.3; }
-.skill-order-item.drag-over .so-icon-wrapper { border-color: #ffd700; }
+.lc-so-item:hover .so-icon-wrapper { border-color: var(--accent); }
+.lc-so-item.dragging { opacity: 0.3; }
 .so-icon-wrapper {
-  position: relative; width: 100px; height: 100px;
+  position: relative; width: 84px; height: 84px;
   border-radius: 8px; overflow: hidden;
   border: 2px solid var(--border);
-  transition: border-color 0.15s, transform 0.15s;
+  transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
 }
-.skill-order-item:hover .so-icon-wrapper { transform: scale(1.08); }
-.skill-order-item.drag-over .so-icon-wrapper { transform: scale(1.1); }
-.so-icon-wrapper .so-bg {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  object-fit: cover; pointer-events: none;
-}
-.so-icon-wrapper .so-avatar {
-  position: relative; z-index: 1; width: 100%; height: 100%;
-  object-fit: contain; padding: 6%; pointer-events: none;
-}
-.so-icon-wrapper .so-badge {
-  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-  z-index: 2; width: 50%; height: auto; pointer-events: none;
-}
-.so-icon-wrapper .so-job {
-  position: absolute; top: 0; left: 0;
-  z-index: 3; width: 32%; height: auto; pointer-events: none;
-}
+.lc-so-item:hover .so-icon-wrapper { transform: scale(1.06); box-shadow: 0 0 12px var(--accent-glow); }
+.so-icon-wrapper .so-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.so-icon-wrapper .so-avatar { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: contain; padding: 6%; pointer-events: none; }
+.so-icon-wrapper .so-badge { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 2; width: 50%; height: auto; pointer-events: none; }
+.so-icon-wrapper .so-job { position: absolute; top: 0; left: 0; z-index: 3; width: 32%; height: auto; pointer-events: none; }
 .so-icon-wrapper .so-idx {
-  position: absolute; top: 2px; right: 2px; z-index: 10;
-  width: 26px; height: 26px; border-radius: 50%;
-  background: var(--accent); color: #fff; font-size: 14px;
-  font-weight: 700; display: flex; align-items: center; justify-content: center;
-  pointer-events: none;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  position: absolute; top: 1px; right: 1px; z-index: 10;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #b8902e);
+  color: #fff; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; box-shadow: 0 1px 4px rgba(0,0,0,0.5);
 }
-/* Individual Toggle */
-.so-individual-toggle { position: relative; display: inline-block; width: 44px; height: 22px; flex-shrink: 0; }
+/* Toggle */
+.so-individual-toggle { position: relative; display: inline-block; width: 38px; height: 20px; flex-shrink: 0; }
 .so-individual-toggle input { opacity: 0; width: 0; height: 0; }
 .so-individual-toggle .so-toggle-slider {
   position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-  background: #3a3a5a; border-radius: 22px; transition: 0.3s;
+  background: var(--surface3); border-radius: 20px; transition: 0.3s;
 }
 .so-individual-toggle .so-toggle-slider::before {
-  content: ''; position: absolute; left: 3px; bottom: 3px;
-  width: 16px; height: 16px; border-radius: 50%; background: #888;
-  transition: 0.3s;
+  content: ''; position: absolute; left: 2px; bottom: 2px;
+  width: 16px; height: 16px; border-radius: 50%; background: var(--text3); transition: 0.3s;
 }
 .so-individual-toggle input:checked + .so-toggle-slider { background: var(--accent); }
-.so-individual-toggle input:checked + .so-toggle-slider::before { transform: translateX(22px); background: #fff; }
+.so-individual-toggle input:checked + .so-toggle-slider::before { transform: translateX(18px); background: #fff; }
 
-.lineup-slot .slot-restriction-msg {
-  display: none;
-  position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
-  z-index: 5; font-size: 9px; color: var(--danger); font-weight: 600;
-  background: rgba(0,0,0,0.7); padding: 0 6px; border-radius: 4px;
-  white-space: nowrap; pointer-events: none;
+/* ========== Longyu Modal ========== */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; z-index: 9999;
+  animation: modalFadeIn 0.2s ease-out;
 }
+@keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-content {
+  background: linear-gradient(135deg, var(--surface), var(--surface2));
+  border: 1px solid var(--border);
+  border-radius: 16px; padding: 20px;
+  max-width: 520px; max-height: 80vh; overflow-y: auto;
+  box-shadow: 0 0 40px rgba(0,0,0,0.6), 0 0 20px var(--accent-glow);
+}
+.modal-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--accent2); text-align: center; letter-spacing: 1px; }
+.modal-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.modal-item {
+  position: relative; cursor: pointer; border: 2px solid transparent;
+  border-radius: 8px; overflow: hidden; transition: all 0.2s;
+  background: var(--surface);
+}
+.modal-item:hover { border-color: var(--accent); transform: scale(1.04); }
+.modal-item.active { border-color: var(--gold); box-shadow: 0 0 10px rgba(255,215,0,0.2); }
+.modal-item img { width: 100%; height: auto; display: block; }
+.modal-item .longyu-name { font-size: 12px; color: var(--text); text-align: center; padding: 2px 0 4px; line-height: 1.2; font-weight: 600; }
+.modal-item .modal-del-btn {
+  position: absolute; top: 3px; right: 3px; z-index: 5;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(200,57,47,0.9); color: #fff;
+  display: none; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; line-height: 1; cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.3); transition: all 0.15s;
+}
+.modal-item:hover .modal-del-btn { display: flex; }
+.modal-item .modal-del-btn:hover { background: var(--danger); transform: scale(1.2); }
 
 /* ========== Right Side ========== */
 .right-panel {
   flex: 0 0 25%; display: flex; flex-direction: column;
-  border-left: 1px solid var(--border); background: var(--surface); min-width: 0;
+  border-left: 1px solid var(--border-glow);
+  background: linear-gradient(180deg, var(--surface), rgba(20,16,12,0.98));
+  min-width: 0;
+  position: relative;
 }
-.pool-title { font-size: 13px; font-weight: 700; }
+.right-panel::before {
+  content: ''; position: absolute; top: 0; left: -1px; bottom: 0; width: 1px;
+  background: linear-gradient(180deg, transparent, var(--accent-glow), transparent);
+  pointer-events: none;
+}
+.pool-title { font-size: 13px; font-weight: 700; letter-spacing: 1px; }
 .pool-filters {
   display: flex; flex-wrap: wrap; gap: 4px;
   padding: 8px 12px 4px; flex-shrink: 0;
@@ -293,35 +439,40 @@ button { font: inherit; border: 0; cursor: pointer; background: none; color: inh
   border: 1px solid var(--border);
   background: var(--surface2); color: var(--text2);
   font-size: 11px; font-weight: 600; cursor: pointer;
-  transition: all 0.15s; white-space: nowrap;
+  transition: all 0.2s; white-space: nowrap;
 }
-.filter-btn:hover { background: #2a2a4e; color: #fff; }
-.filter-btn.active { background: rgba(108,108,255,0.2); color: #fff; border-color: var(--accent); }
+.filter-btn:hover { background: var(--surface3); color: var(--text); border-color: var(--border-glow); }
+.filter-btn.active {
+  background: rgba(212,168,74,0.15); color: #fff;
+  border-color: var(--accent); box-shadow: 0 0 8px var(--accent-glow);
+}
 
 .pool-scroll { flex: 1; overflow-y: auto; padding: 8px 12px 16px; }
-.pool-scroll::-webkit-scrollbar { width: 6px; }
+.pool-scroll::-webkit-scrollbar { width: 4px; }
 .pool-scroll::-webkit-scrollbar-track { background: transparent; }
-.pool-scroll::-webkit-scrollbar-thumb { background: #3a3a5a; border-radius: 3px; }
+.pool-scroll::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 4px; }
+.pool-scroll::-webkit-scrollbar-thumb:hover { background: var(--border-glow); }
 .modal-content::-webkit-scrollbar { display: none; }
 .modal-content { -ms-overflow-style: none; scrollbar-width: none; }
 
 .pool-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; align-content: flex-start; }
 
 .char-card {
-  position: relative; border-radius: 6px; cursor: grab;
+  position: relative; border-radius: 8px; cursor: grab;
   aspect-ratio: 1; overflow: hidden;
   border: 2px solid transparent;
-  transition: transform 0.15s, border-color 0.15s;
+  transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
 }
 .char-card:active { cursor: grabbing; }
 .char-card.dragging { opacity: 0.3; }
-.char-card:hover { transform: scale(1.06); border-color: var(--accent); z-index: 2; }
-.char-card.selected { border-color: #ffd700; box-shadow: 0 0 12px rgba(255,215,0,0.3); }
-.char-card.placed { display: none !important; }
+.char-card:hover {
+  transform: scale(1.1) translateY(-2px); border-color: var(--accent2);
+  z-index: 2; box-shadow: 0 4px 20px rgba(212,168,74,0.35), 0 0 12px var(--accent-glow);
+}
+.char-card.selected { border-color: var(--gold); box-shadow: 0 4px 20px rgba(255,215,0,0.3), 0 0 12px rgba(255,215,0,0.15); }
 .char-card .char-bg {
-  position: absolute; top: 0; left: 0;
-  width: 100%; height: 100%; object-fit: cover;
-  display: block; pointer-events: none;
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  object-fit: cover; display: block; pointer-events: none;
 }
 .char-card .char-avatar {
   position: relative; z-index: 1; display: block;
@@ -330,47 +481,28 @@ button { font: inherit; border: 0; cursor: pointer; background: none; color: inh
 }
 .char-card .char-badge {
   position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-  z-index: 2; width: 50%; height: auto;
-  display: block; pointer-events: none;
+  z-index: 2; width: 50%; height: auto; display: block; pointer-events: none;
 }
 .char-card .char-job {
-  position: absolute; top: 0; left: 0;
-  z-index: 3; width: 32%; height: auto;
+  position: absolute; top: 0; left: 0; z-index: 3; width: 32%; height: auto;
   display: block; pointer-events: none;
 }
 
 /* ========== Status ========== */
 .statusbar {
-  height: 26px; display: flex; align-items: center;
-  padding: 0 14px; font-size: 10px; color: var(--text2);
+  height: 28px; display: flex; align-items: center;
+  padding: 0 14px; font-size: 11px; color: var(--text2);
   border-top: 1px solid var(--border); flex-shrink: 0;
+  background: linear-gradient(180deg, rgba(20,16,12,0.98), rgba(20,16,12,0.95));
+  transition: color 0.3s, background 0.3s;
 }
-.statusbar.success { color: #69DB7C; }
+.statusbar.success { color: var(--success); background: linear-gradient(180deg, rgba(20,16,12,0.98), rgba(20,30,16,0.95)); }
 
 /* ========== Mobile ========== */
 @media (max-width: 768px) {
   .app { flex-direction: column; }
   .left-panel { flex: 1; display: flex; flex-direction: column; min-height: 0; }
   .left-body { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
-  .dragon-scroll { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 8px 10px 4px; border-right: 0; border-bottom: 1px solid var(--border); overflow: visible; height: auto; width: 100%; }
-  .dragon-scroll::-webkit-scrollbar { height: 4px; }
-  .dragon-section-title { display: none; }
-  .dragon-card { width: auto; margin-bottom: 0; padding: 4px 2px; min-width: 0; }
-  .dragon-img-wrap { height: 40px; }
-  .dragon-card .name { font-size: 9px; }
-  .lineup-area { padding: 5px 8px 0; flex: none; }
-  .lineup-content { display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
-  .dragon-showcase { flex-direction: column; align-items: center; gap: 4px; align-self: center; }
-  .showcase-left { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-  .showcase-wrapper { width: 100px; height: 125px; }
-  .dragon-showcase .showcase-name { font-size: 11px; }
-  .longyu-grid { flex-direction: row; gap: 8px; justify-content: center; width: 100%; }
-  .longyu-grid .longyu-icon { width: 60px; height: 60px; }
-  .longyu-slot .longyu-name { font-size: 10px; max-width: 60px; }
-  .lineup-col-labels { grid-template-columns: repeat(3, 90px); gap: 6px; }
-  .lineup-grid { grid-template-columns: repeat(3, 90px); grid-template-rows: repeat(3, 90px); gap: 6px; }
-  .lineup-slot { border-radius: 8px; }
-  .skill-order-section { display: none; }
   .right-panel { flex: 1; min-height: 120px; border-left: 0; overflow-y: auto; }
   .pool-grid { grid-template-columns: repeat(6, 1fr); gap: 4px; }
   .pool-filters { padding: 6px 8px 2px; gap: 3px; }
@@ -378,7 +510,259 @@ button { font: inherit; border: 0; cursor: pointer; background: none; color: inh
   .pool-scroll { padding: 6px 8px 10px; }
   .modal-grid { grid-template-columns: repeat(6, 1fr); gap: 4px; }
   .modal-content { max-width: 95vw; padding: 8px; }
+  .lineup-card { min-width: 360px; padding: 10px; }
+  .lc-grid { grid-template-columns: repeat(3, 80px); grid-template-rows: repeat(3, 80px); }
+  .lc-col-labels { grid-template-columns: repeat(3, 80px); }
+  .lc-showcase-wrapper { width: 80px; height: 110px; }
 }
+
+/* ========== Canvas Context Menu ========== */
+.canvas-menu {
+  position: fixed; z-index: 10000;
+  min-width: 150px; padding: 6px;
+  background: linear-gradient(160deg, rgba(26,20,16,0.98) 0%, rgba(36,28,21,0.98) 100%);
+  border: 1px solid var(--border-glow);
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 24px rgba(212,168,74,0.18), inset 0 1px 0 rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+  animation: menuPop 0.14s cubic-bezier(0.2,0.8,0.2,1);
+}
+@keyframes menuPop { from { opacity: 0; transform: scale(0.92) translateY(-4px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.canvas-menu-item {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 8px 12px; border-radius: 6px;
+  font-size: 12px; font-weight: 700; color: var(--text2);
+  text-align: left; cursor: pointer;
+  transition: all 0.15s;
+}
+.canvas-menu-item:hover {
+  background: rgba(212,168,74,0.14); color: var(--accent2);
+}
+.canvas-menu-item .cmi-icon { font-size: 14px; color: var(--accent); width: 16px; text-align: center; }
+.canvas-menu-item .cmi-sub { margin-left: auto; font-size: 10px; color: var(--text3); font-weight: 600; }
+
+/* ========== Generic Card Body (shared chrome) ========== */
+.lineup-card.card-equipment, .lineup-card.card-dragonNest { min-width: 0; width: fit-content; max-width: 440px; }
+.card-body { padding: 4px 4px 0; width: 100%; overflow: hidden; }
+
+/* Minimalist header: drag-handle bar + close button (no title / duplicate) */
+.lc-header-minimal {
+  display: flex; align-items: center;
+  margin-bottom: 8px;
+  padding: 2px 4px;
+  border-radius: 6px;
+  cursor: move;
+  transition: background 0.15s;
+}
+.lc-header-minimal:hover { background: rgba(212,168,74,0.08); }
+.lc-header-minimal .lc-drag-handle {
+  flex: 1; text-align: left; padding: 4px 6px; font-size: 16px; color: var(--text3);
+  transition: color 0.15s;
+}
+.lc-header-minimal:hover .lc-drag-handle { color: var(--accent2); }
+.lc-mini-btn {
+  width: 22px; height: 22px; border-radius: 5px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text3); font-size: 13px; line-height: 1; cursor: pointer;
+  transition: all 0.15s;
+}
+.lc-mini-btn + .lc-mini-btn { margin-left: 4px; }
+.lc-mini-btn:hover { border-color: var(--accent); color: var(--accent2); background: rgba(212,168,74,0.12); }
+.lc-mini-btn.delete:hover { border-color: var(--danger); color: var(--danger); background: rgba(200,57,47,0.12); }
+
+/* ========== Equipment Card (3x2) ========== */
+.ec-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 78px);
+  grid-template-rows: repeat(3, 78px);
+  gap: 6px;
+}
+.ec-slot {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  background: var(--surface); border: 1.5px dashed var(--border);
+  border-radius: 8px; padding: 0; cursor: pointer; overflow: hidden;
+  transition: all 0.2s;
+}
+.ec-slot:hover { border-color: var(--accent); background: var(--surface2); }
+.ec-slot.filled { border-style: solid; border-color: rgba(212,168,74,0.35); background: var(--surface); }
+.ec-slot.filled:hover { border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+.ec-slot .ec-plus {
+  font-size: 22px; color: var(--text3); opacity: 0.25; pointer-events: none; line-height: 1;
+}
+.ec-slot .ec-img {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  object-fit: cover; display: block; pointer-events: none;
+}
+/* ========== Dragon Nest Card (8x8) ========== */
+.dn-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 44px);
+  grid-template-rows: repeat(8, 44px);
+  gap: 4px;
+  width: 380px;
+  max-width: 380px;
+  box-sizing: border-box;
+}
+.dn-cell {
+  position: relative; border-radius: 5px; cursor: pointer; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--border);
+  transition: all 0.15s;
+}
+.dn-cell:hover { border-color: var(--accent); background: var(--surface2); transform: scale(1.08); z-index: 2; box-shadow: 0 0 10px var(--accent-glow); }
+.dn-cell.filled { border-color: rgba(212,168,74,0.4); background: var(--surface2); }
+.dn-cell.filled:hover { border-color: var(--accent2); }
+.dn-cell .dn-dot { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 4px; height: 4px; border-radius: 50%; background: var(--text3); opacity: 0.35; pointer-events: none; }
+.dn-cell .dn-img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+
+/* Treasure overlay: spans multiple grid cells */
+.dn-artifact {
+  border-radius: 6px; overflow: hidden; position: relative; z-index: 3;
+  border: 1.5px solid var(--accent); box-shadow: 0 0 12px var(--accent-glow), 0 4px 14px rgba(0,0,0,0.4);
+  cursor: grab; transition: transform 0.15s, box-shadow 0.15s;
+  background: #15110d;
+}
+.dn-artifact:hover { transform: scale(1.04); z-index: 5; box-shadow: 0 0 18px var(--accent), 0 6px 18px rgba(0,0,0,0.5); border-color: var(--accent2); }
+.dn-artifact:active { cursor: grabbing; }
+.dn-artifact.dragging { opacity: 0.35; }
+.dn-artifact img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; padding: 3px; }
+
+/* Dashed placement preview while dragging treasure over the grid */
+.dn-preview {
+  border: 2px dashed var(--accent2); border-radius: 6px; z-index: 4;
+  background: rgba(232,192,104,0.12); pointer-events: none;
+  box-shadow: inset 0 0 16px rgba(232,192,104,0.18);
+}
+.dn-preview.dn-preview-bad { border-color: var(--danger); background: rgba(200,57,47,0.14); box-shadow: inset 0 0 16px rgba(200,57,47,0.18); }
+
+/* Treasure picker panel (inline, inside dragon nest card) */
+.dn-picker-toggle {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; margin-top: 6px; padding: 5px 0;
+  background: rgba(212,168,74,0.06); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--accent2); font-size: 11px; font-weight: 700;
+  cursor: pointer; letter-spacing: 1px; transition: all 0.15s;
+  user-select: none;
+  box-sizing: border-box;
+}
+.dn-picker-toggle:hover { background: rgba(212,168,74,0.12); border-color: var(--accent); }
+.dn-picker-toggle .dpt-arrow { transition: transform 0.2s; font-size: 10px; }
+.dn-picker-toggle.open .dpt-arrow { transform: rotate(180deg); }
+
+.dn-picker-panel {
+  margin-top: 6px; overflow: hidden;
+  max-height: 0; opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+.dn-picker-panel.open {
+  max-height: 380px; opacity: 1;
+}
+
+.dn-picker-inner {
+  background: linear-gradient(160deg, rgba(26,20,16,0.98) 0%, rgba(36,28,21,0.98) 100%);
+  border: 1px solid var(--border-glow); border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 12px rgba(212,168,74,0.12);
+  backdrop-filter: blur(10px); padding: 8px;
+  display: flex; flex-direction: column; align-items: center;
+}
+.dn-picker-title { font-size: 11px; font-weight: 700; color: var(--accent2); margin-bottom: 6px; text-align: center; letter-spacing: 1px; }
+.dn-picker-grid { display: grid; grid-template-columns: repeat(4, 64px); gap: 6px; max-height: 320px; overflow-y: auto; align-content: start; justify-content: center; padding: 4px; }
+.dn-picker-grid::-webkit-scrollbar { width: 3px; }
+.dn-picker-grid::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+.dn-picker-item {
+  position: relative; border-radius: 6px; overflow: hidden; cursor: grab;
+  border: 1.5px solid var(--border); background: #15110d;
+  transition: all 0.15s; width: 64px; height: 64px; flex-shrink: 0;
+}
+.dn-picker-item:hover { border-color: var(--accent); transform: scale(1.05); box-shadow: 0 0 8px var(--accent-glow); }
+.dn-picker-item:active { cursor: grabbing; }
+.dn-picker-item img { width: 100%; height: 100%; object-fit: contain; display: block; padding: 2px; }
+.dn-picker-item.dn-picker-custom { border-color: var(--jade); box-shadow: 0 0 6px rgba(90,154,138,0.3); }
+.dn-picker-item.dn-picker-custom:hover { border-color: var(--jade); box-shadow: 0 0 12px rgba(90,154,138,0.6); }
+.dn-picker-item .dpi-dim {
+  position: absolute; top: 2px; right: 2px; z-index: 2;
+  font-size: 9px; font-weight: 700; color: #1a1410; background: var(--accent2);
+  padding: 1px 4px; border-radius: 3px; line-height: 1.2; pointer-events: none;
+}
+.dn-picker-hint { font-size: 9px; color: var(--text3); margin-top: 5px; text-align: center; }
+
+/* Upload cells (treasure picker, longyu modal, character pool) */
+.dn-picker-upload {
+  border: 2px dashed var(--border-glow); border-radius: 6px; cursor: pointer;
+  width: 64px; height: 64px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; background: rgba(212,168,74,0.05); transition: all 0.2s;
+}
+.dn-picker-upload:hover { border-color: var(--accent); background: rgba(212,168,74,0.15); transform: scale(1.05); box-shadow: 0 0 10px var(--accent-glow); }
+.dn-picker-upload .dn-upload-icon { font-size: 22px; font-weight: 700; color: var(--accent2); line-height: 1; }
+.dn-picker-upload .dn-upload-label { font-size: 9px; font-weight: 700; color: var(--text2); letter-spacing: 1px; }
+
+.modal-upload {
+  display: flex; align-items: center; justify-content: center;
+  border: 2px dashed var(--border-glow) !important; background: rgba(212,168,74,0.05);
+  min-height: 80px; cursor: pointer;
+}
+.modal-upload:hover { border-color: var(--accent) !important; background: rgba(212,168,74,0.15); }
+.modal-upload-inner { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.modal-upload-icon { font-size: 24px; font-weight: 700; color: var(--accent2); line-height: 1; }
+.modal-upload-label { font-size: 11px; font-weight: 600; color: var(--text2); }
+
+.pool-upload-cell {
+  display: flex; align-items: center; justify-content: center;
+  border: 2px dashed var(--border-glow) !important; background: rgba(212,168,74,0.05);
+  cursor: pointer;
+}
+.pool-upload-cell:hover { border-color: var(--accent2) !important; background: rgba(212,168,74,0.15); transform: scale(1.08) translateY(-2px); box-shadow: 0 4px 16px rgba(212,168,74,0.3); }
+.pool-upload-inner { display: flex; flex-direction: column; align-items: center; gap: 3px; pointer-events: none; }
+.pool-upload-icon { font-size: 26px; font-weight: 700; color: var(--accent2); line-height: 1; }
+.pool-upload-label { font-size: 10px; font-weight: 600; color: var(--text2); letter-spacing: 1px; }
+
+.char-card-custom { border-color: rgba(90,154,138,0.4); }
+.char-card-custom:hover { border-color: var(--jade); box-shadow: 0 4px 20px rgba(90,154,138,0.35); }
+
+/* Mobile tuning for new cards */
+@media (max-width: 768px) {
+  .ec-grid { grid-template-columns: repeat(2, 64px); grid-template-rows: repeat(3, 64px); }
+  .dn-grid { grid-template-columns: repeat(8, 34px); grid-template-rows: repeat(8, 34px); gap: 3px; width: 296px; max-width: 296px; } /* 8*34 + 7*3 */
+}
+
+/* ========== Connection Ports & Lines ========== */
+.ec-card-port {
+  width: 12px; height: 12px; border-radius: 50%; margin: 0 auto 8px;
+  background: var(--accent); border: 2px solid var(--bg);
+  cursor: crosshair; position: relative; z-index: 6;
+  box-shadow: 0 0 6px var(--accent-glow);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.ec-card-port:hover { transform: scale(1.4); box-shadow: 0 0 14px var(--accent); }
+.so-port {
+  width: 11px; height: 11px; border-radius: 50%; margin: 5px auto 0;
+  background: var(--surface3); border: 2px solid var(--border-glow);
+  cursor: pointer; transition: all 0.15s; position: relative; z-index: 1;
+}
+.so-port:hover, .so-port.conn-target { background: var(--accent); border-color: var(--accent2); box-shadow: 0 0 12px var(--accent-glow); transform: scale(1.4); }
+.so-port.conn-active { background: var(--accent); border-color: var(--accent2); box-shadow: 0 0 8px var(--accent-glow); }
+/* Snap-assist: when a dragged line is near a port, the port enlarges + pulses to confirm drop */
+.ec-card-port.conn-snapped, .so-port.conn-snapped {
+  transform: scale(1.9);
+  box-shadow: 0 0 18px var(--accent), 0 0 36px var(--accent-glow);
+  animation: portPulse 0.6s ease-in-out infinite alternate;
+}
+@keyframes portPulse { from { filter: brightness(1); } to { filter: brightness(1.4); } }
+
+.conn-layer {
+  position: absolute; top: 0; left: 0; width: 1px; height: 1px;
+  overflow: visible; pointer-events: none; z-index: 200;
+}
+.conn-layer path {
+  fill: none; stroke: var(--accent); stroke-width: 2.2;
+  vector-effect: non-scaling-stroke; opacity: 0.75;
+  pointer-events: stroke; cursor: pointer;
+  transition: stroke-width 0.12s, opacity 0.12s;
+}
+.conn-layer path:hover { stroke-width: 3.6; opacity: 1; stroke: var(--accent2); }
+.conn-layer path.conn-temp { stroke-dasharray: 6 4; opacity: 0.55; pointer-events: none; }
 </style>
 </head>
 <body>
@@ -389,43 +773,27 @@ button { font: inherit; border: 0; cursor: pointer; background: none; color: inh
       <img src="logo.png" style="height:28px;width:auto;display:block;">
       <h1>阵容编辑器</h1>
       <span class="sub" id="charCount"></span>
+      <span class="sub" style="color:var(--text3)">右键空白画布添加卡片</span>
       <button class="btn" id="saveBtn">保存</button>
       <button class="btn" id="resetBtn">重置</button>
+      <button class="btn accent-outline" id="tutorialBtn">教程</button>
     </div>
     <div class="left-body" id="leftBody">
-      <div class="dragon-scroll" id="dragonList"></div>
-      <div class="lineup-area" id="lineupView">
-        <div class="lineup-title"></div>
-        <div class="lineup-content">
-          <div class="dragon-showcase" id="dragonShowcase">
-            <div class="showcase-left">
-              <div class="showcase-wrapper">
-                <img class="showcase-img" id="showcaseImg" src="" alt="">
-              </div>
-              <div class="showcase-name" id="showcaseName">星辰龙</div>
-            </div>
-          </div>
-          <div class="lineup-grid-container">
-            <div class="lineup-col-labels">
-              <span class="col-label back">后排</span>
-              <span class="col-label mid">中排</span>
-              <span class="col-label front">前排</span>
-            </div>
-            <div class="lineup-grid" id="lineupGrid"></div>
-          </div>
-          <div class="longyu-grid" id="longyuGrid">
-          <div class="longyu-slot"><img class="longyu-icon" style="display:none" onerror="this.style.display='none'"><div class="longyu-name"></div></div>
-          <div class="longyu-slot"><img class="longyu-icon" style="display:none" onerror="this.style.display='none'"><div class="longyu-name"></div></div>
-          <div class="longyu-slot"><img class="longyu-icon" style="display:none" onerror="this.style.display='none'"><div class="longyu-name"></div></div>
-          <div class="longyu-slot"><img class="longyu-icon" style="display:none" onerror="this.style.display='none'"><div class="longyu-name"></div></div>
-          </div>
+      <div class="canvas-container" id="canvasContainer">
+        <div class="canvas-inner" id="canvasInner">
+          <div class="canvas-grid"></div>
+          <svg class="conn-layer" id="connLayer"></svg>
         </div>
-      <div class="skill-order-section" id="skillOrderSection">
-          <div class="skill-order-header">
-            <span class="skill-order-title">奥义顺序</span>
-          </div>
-          <div class="skill-order-row" id="skillOrderRow"></div>
+        <div class="canvas-controls">
+          <button class="cc-btn" id="zoomInBtn" title="放大">+</button>
+          <button class="cc-btn" id="zoomOutBtn" title="缩小">-</button>
+          <button class="cc-btn" id="zoomFitBtn" title="适应窗口">⊡</button>
         </div>
+        <div class="trash-zone" id="trashZone" title="拖到此处删除自定义图片">
+          <span class="trash-icon">🗑</span>
+          <span class="trash-label">删除</span>
+        </div>
+        <div class="canvas-info" id="canvasInfo">滚轮缩放 | 拖拽平移 | 右键拖动角色</div>
       </div>
     </div>
   </div>
@@ -447,8 +815,21 @@ button { font: inherit; border: 0; cursor: pointer; background: none; color: inh
 <script>
 const FACTIONS = ["元素","旷野","奥术","圣堂","彼岸","幻境"];
 const JOB_NAMES = { 1:'守卫', 2:'牧师', 3:'刺客', 4:'战士', 5:'射手', 6:'法师' };
+const FACTION_CODE = { '1':'元素', '2':'旷野', '3':'奥术', '4':'圣堂', '5':'彼岸', '6':'幻境' };
 
-// Data from 角色信息结果.txt, keyed by Sprite ID (icon_hero_XXXX → XXXX)
+// ===== Custom uploaded images (persisted to localStorage separately) =====
+let CUSTOM_TREASURES = [];         // [{ file, dataUrl, h, w }]
+let CUSTOM_TREASURE_MAP = {};      // file -> { dataUrl, h, w }
+let CUSTOM_LONGYU = [[],[],[],[]];  // 4 slots, each: [{ key, dataUrl, name }]
+let CUSTOM_LONGYU_MAP = {};        // key -> { dataUrl, name }
+let CUSTOM_CHARS = [];             // [{ name, dataUrl, factions:[f1,f2] }]
+let CUSTOM_CHAR_MAP = {};          // name -> { dataUrl, factions }
+const CUSTOM_IMG_KEY = "dragon_lineup_custom_images";
+
+function isCustomChar(name) { return !!CUSTOM_CHAR_MAP[name]; }
+function isCustomTreasure(file) { return !!CUSTOM_TREASURE_MAP[file]; }
+function isCustomLongyu(file) { return !!CUSTOM_LONGYU_MAP[file]; }
+
 const CHAR_DATA = {
   1502:{n:'史莱姆王',j:1,f:['彼岸','幻境']},
   1503:{n:'远古魔像',j:1,f:['圣堂','元素']},
@@ -504,7 +885,7 @@ const CHAR_DATA = {
   4609:{n:'断罪之翼',j:4,f:['奥术','幻境']},
   4610:{n:'乱世魔王',j:4,f:['旷野','圣堂']},
   4701:{n:'阿瑞斯',j:4,f:['幻境','奥术']},
-  4702:{n:'新英雄4702',j:4,f:[]},
+  4702:{n:'雷神',j:4,f:['元素','圣堂']},
   4703:{n:'大力神',j:4,f:['旷野','奥术']},
   5501:{n:'光耀元素',j:5,f:['圣堂','元素']},
   5502:{n:'猎魔人',j:5,f:['奥术','幻境']},
@@ -539,130 +920,53 @@ const CHAR_DATA = {
   6703:{n:'众神之王',j:6,f:['圣堂','元素']}
 };
 const CHAR_NAMES = Object.values(CHAR_DATA).map(d => d.n);
+const CHAR_NAME_TO_ID = {};
+Object.entries(CHAR_DATA).forEach(([id, d]) => CHAR_NAME_TO_ID[d.n] = Number(id));
 
-function getSpriteID(name) {
-  for (const [id, d] of Object.entries(CHAR_DATA)) {
-    if (d.n === name) return Number(id);
-  }
-  return 1502;
-}
-
+function getSpriteID(name) { return CHAR_NAME_TO_ID[name] || 1502; }
 function getSpriteFile(name) {
+  if (CUSTOM_CHAR_MAP[name]) return CUSTOM_CHAR_MAP[name].dataUrl;
   return 'Sprite/icon_hero_' + getSpriteID(name) + '.png';
 }
-
-function getCharName(id) {
-  return (CHAR_DATA[id] || {}).n || '未知';
-}
-
+function getCharName(id) { return (CHAR_DATA[id] || {}).n || '未知'; }
 function getCharFactions(name) {
-  const id = getSpriteID(name);
-  return (CHAR_DATA[id] || {}).f || [];
+  if (CUSTOM_CHAR_MAP[name]) return CUSTOM_CHAR_MAP[name].factions;
+  return (CHAR_DATA[getSpriteID(name)] || {}).f || [];
 }
-
 function getJobClass(name) {
-  const id = getSpriteID(name);
-  return (CHAR_DATA[id] || {}).j || 1;
+  if (CUSTOM_CHAR_MAP[name]) return CUSTOM_CHAR_MAP[name].job || 3;
+  return (CHAR_DATA[getSpriteID(name)] || {}).j || 1;
 }
-
 function isSSR(name) {
-  const p = Math.floor(getSpriteID(name) / 100);
-  return [17, 27, 37, 47, 57, 67].includes(p);
+  if (CUSTOM_CHAR_MAP[name]) return false;
+  return [17, 27, 37, 47, 57, 67].includes(Math.floor(getSpriteID(name) / 100));
 }
 
 // ===== Longyu =====
 const LONGYU_FILES = [
-  'MythsMagicIcon_801015.png',
-  'MythsMagicIcon_801025.png',
-  'MythsMagicIcon_801035.png',
-  'MythsMagicIcon_801045.png',
-  'MythsMagicIcon_801055.png',
-  'MythsMagicIcon_801065.png',
-  'MythsMagicIcon_801075.png',
-  'MythsMagicIcon_801086.png',
-  'MythsMagicIcon_801096.png',
-  'MythsMagicIcon_801106.png',
-  'MythsMagicIcon_801116.png',
-  'MythsMagicIcon_801126.png',
-  'MythsMagicIcon_801135.png',
-  'MythsMagicIcon_801146.png',
-  'MythsMagicIcon_801156.png',
-  'MythsMagicIcon_801166.png',
-  'MythsMagicIcon_801176.png',
-  'MythsMagicIcon_801186.png',
-  'MythsMagicIcon_801196.png',
-  'MythsMagicIcon_801206.png',
-  'MythsMagicIcon_801216.png',
-  'MythsMagicIcon_802015.png',
-  'MythsMagicIcon_802025.png',
-  'MythsMagicIcon_802035.png',
-  'MythsMagicIcon_802045.png',
-  'MythsMagicIcon_802055.png',
-  'MythsMagicIcon_802065.png',
-  'MythsMagicIcon_802075.png',
-  'MythsMagicIcon_802086.png',
-  'MythsMagicIcon_802096.png',
-  'MythsMagicIcon_802106.png',
-  'MythsMagicIcon_802116.png',
-  'MythsMagicIcon_802126.png',
-  'MythsMagicIcon_802136.png',
-  'MythsMagicIcon_802146.png',
-  'MythsMagicIcon_802156.png',
-  'MythsMagicIcon_802166.png',
-  'MythsMagicIcon_802176.png',
-  'MythsMagicIcon_802186.png',
-  'MythsMagicIcon_802196.png',
-  'MythsMagicIcon_802206.png',
-  'MythsMagicIcon_802216.png',
-  'MythsMagicIcon_803015.png',
-  'MythsMagicIcon_803025.png',
-  'MythsMagicIcon_803035.png',
-  'MythsMagicIcon_803045.png',
-  'MythsMagicIcon_803055.png',
-  'MythsMagicIcon_803065.png',
-  'MythsMagicIcon_803076.png',
-  'MythsMagicIcon_803086.png',
-  'MythsMagicIcon_803096.png',
-  'MythsMagicIcon_803106.png',
-  'MythsMagicIcon_803116.png',
-  'MythsMagicIcon_803126.png',
-  'MythsMagicIcon_803136.png',
-  'MythsMagicIcon_803146.png',
-  'MythsMagicIcon_803156.png',
-  'MythsMagicIcon_803166.png',
-  'MythsMagicIcon_803176.png',
-  'MythsMagicIcon_803186.png',
-  'MythsMagicIcon_803196.png',
-  'MythsMagicIcon_803206.png',
-  'MythsMagicIcon_803216.png',
-  'MythsMagicIcon_803226.png',
-  'MythsMagicIcon_803236.png',
-  'MythsMagicIcon_803246.png',
-  'MythsMagicIcon_803256.png',
-  'MythsMagicIcon_804016.png',
-  'MythsMagicIcon_804036.png',
-  'MythsMagicIcon_804046.png',
-  'MythsMagicIcon_804056.png',
-  'MythsMagicIcon_804066.png',
-  'MythsMagicIcon_804076.png',
-  'MythsMagicIcon_804086.png',
-  'MythsMagicIcon_804096.png',
-  'MythsMagicIcon_804106.png',
-  'MythsMagicIcon_804116.png',
-  'MythsMagicIcon_804126.png',
-  'MythsMagicIcon_804136.png',
-  'MythsMagicIcon_804146.png',
-  'MythsMagicIcon_804156.png',
-  'MythsMagicIcon_804166.png',
-  'MythsMagicIcon_804176.png',
-  'MythsMagicIcon_804186.png',
-  'MythsMagicIcon_804196.png',
-  'MythsMagicIcon_804206.png',
-  'MythsMagicIcon_804216.png',
-  'MythsMagicIcon_804226.png',
-  'MythsMagicIcon_804236.png',
-  'MythsMagicIcon_804246.png',
-  'MythsMagicIcon_804256.png',
+  'MythsMagicIcon_801015.png','MythsMagicIcon_801025.png','MythsMagicIcon_801035.png','MythsMagicIcon_801045.png',
+  'MythsMagicIcon_801055.png','MythsMagicIcon_801065.png','MythsMagicIcon_801075.png','MythsMagicIcon_801086.png',
+  'MythsMagicIcon_801096.png','MythsMagicIcon_801106.png','MythsMagicIcon_801116.png','MythsMagicIcon_801126.png',
+  'MythsMagicIcon_801135.png','MythsMagicIcon_801146.png','MythsMagicIcon_801156.png','MythsMagicIcon_801166.png',
+  'MythsMagicIcon_801176.png','MythsMagicIcon_801186.png','MythsMagicIcon_801196.png','MythsMagicIcon_801206.png',
+  'MythsMagicIcon_801216.png','MythsMagicIcon_802015.png','MythsMagicIcon_802025.png','MythsMagicIcon_802035.png',
+  'MythsMagicIcon_802045.png','MythsMagicIcon_802055.png','MythsMagicIcon_802065.png','MythsMagicIcon_802075.png',
+  'MythsMagicIcon_802086.png','MythsMagicIcon_802096.png','MythsMagicIcon_802106.png','MythsMagicIcon_802116.png',
+  'MythsMagicIcon_802126.png','MythsMagicIcon_802136.png','MythsMagicIcon_802146.png','MythsMagicIcon_802156.png',
+  'MythsMagicIcon_802166.png','MythsMagicIcon_802176.png','MythsMagicIcon_802186.png','MythsMagicIcon_802196.png',
+  'MythsMagicIcon_802206.png','MythsMagicIcon_802216.png','MythsMagicIcon_803015.png','MythsMagicIcon_803025.png',
+  'MythsMagicIcon_803035.png','MythsMagicIcon_803045.png','MythsMagicIcon_803055.png','MythsMagicIcon_803065.png',
+  'MythsMagicIcon_803076.png','MythsMagicIcon_803086.png','MythsMagicIcon_803096.png','MythsMagicIcon_803106.png',
+  'MythsMagicIcon_803116.png','MythsMagicIcon_803126.png','MythsMagicIcon_803136.png','MythsMagicIcon_803146.png',
+  'MythsMagicIcon_803156.png','MythsMagicIcon_803166.png','MythsMagicIcon_803176.png','MythsMagicIcon_803186.png',
+  'MythsMagicIcon_803196.png','MythsMagicIcon_803206.png','MythsMagicIcon_803216.png','MythsMagicIcon_803226.png',
+  'MythsMagicIcon_803236.png','MythsMagicIcon_803246.png','MythsMagicIcon_803256.png','MythsMagicIcon_804016.png',
+  'MythsMagicIcon_804036.png','MythsMagicIcon_804046.png','MythsMagicIcon_804056.png','MythsMagicIcon_804066.png',
+  'MythsMagicIcon_804076.png','MythsMagicIcon_804086.png','MythsMagicIcon_804096.png','MythsMagicIcon_804106.png',
+  'MythsMagicIcon_804116.png','MythsMagicIcon_804126.png','MythsMagicIcon_804136.png','MythsMagicIcon_804146.png',
+  'MythsMagicIcon_804156.png','MythsMagicIcon_804166.png','MythsMagicIcon_804176.png','MythsMagicIcon_804186.png',
+  'MythsMagicIcon_804196.png','MythsMagicIcon_804206.png','MythsMagicIcon_804216.png','MythsMagicIcon_804226.png',
+  'MythsMagicIcon_804236.png','MythsMagicIcon_804246.png','MythsMagicIcon_804256.png',
 ];
 const LONGYU_NAMES = {
   'MythsMagicIcon_801015.png':'攻击光环','MythsMagicIcon_801025.png':'物伤光环','MythsMagicIcon_801035.png':'魔伤光环','MythsMagicIcon_801045.png':'攻速光环','MythsMagicIcon_801055.png':'暴击光环','MythsMagicIcon_801065.png':'命中光环',
@@ -682,104 +986,106 @@ const LONGYU_NAMES = {
   'MythsMagicIcon_804196.png':'愤怒连击','MythsMagicIcon_804206.png':'扰技疲敌','MythsMagicIcon_804216.png':'圣光盾击','MythsMagicIcon_804226.png':'召唤蚀甲','MythsMagicIcon_804236.png':'疾雷幻身','MythsMagicIcon_804246.png':'奥法传承',
   'MythsMagicIcon_804256.png':'坚毅不倒',
 };
-// Group by position: 801→slot0, 802→slot1, 803→slot2, 804→slot3
 const LONGYU_BY_SLOT = [[],[],[],[]];
 LONGYU_FILES.forEach(f => {
   const m = f.match(/MythsMagicIcon_80(\d)/);
-  if (m) {
-    const slot = parseInt(m[1]) - 1;
-    if (slot >= 0 && slot < 4) LONGYU_BY_SLOT[slot].push(f);
-  }
+  if (m) { const slot = parseInt(m[1]) - 1; if (slot >= 0 && slot < 4) LONGYU_BY_SLOT[slot].push(f); }
 });
-const longyuSelections = {}; // { dragonName: ['file0','file1','file2','file3'] }
-
-function getLongyuSelection(dragon, slotIdx) {
-  const sel = longyuSelections[dragon.name];
-  return (sel && sel[slotIdx]) || (dragon.longyu && dragon.longyu[slotIdx]) || LONGYU_BY_SLOT[slotIdx][0];
+function getLongyuPath(file) {
+  if (CUSTOM_LONGYU_MAP[file]) return CUSTOM_LONGYU_MAP[file].dataUrl;
+  return 'longyu/' + file;
+}
+function getLongyuName(file) {
+  if (CUSTOM_LONGYU_MAP[file]) return CUSTOM_LONGYU_MAP[file].name;
+  return LONGYU_NAMES[file] || file;
 }
 
-function setLongyuSelection(dragon, slotIdx, file) {
-  dragon.longyu[slotIdx] = file;
-  save();
+// ===== Equipment =====
+// Slot index → category folder name (2×3 grid: top-to-bottom, left-to-right)
+const EQUIPMENT_SLOTS = ['头冠', '胸甲', '护臂', '靴子', '武器', '饰品'];
+const EQUIPMENT_FILES = {
+  '头冠': ['急速','抗暴','攻击','攻速','暴击','格挡','治疗','爆伤','物防','生命','魔抗'],
+  '胸甲': ['急速','抗暴','攻击','攻速','暴击','格挡','治疗','爆伤','物防','生命','魔抗'],
+  '护臂': ['急速','抗暴','攻击','攻速','暴击','格挡','治疗','爆伤','物防','生命','魔抗'],
+  '靴子': ['急速','抗暴','攻击','攻速','暴击','格挡','治疗','爆伤','物防','生命','魔抗'],
+  '武器': ['冥火','减费','加费','命中','咒法','回复','愤怒','战舰','提丰','攻击','无尽','混乱','物防','猫猫','生命','红叉','轻语','重伤','铁序','饮血剑','魔抗'],
+  '饰品': ['减费','击破','加费','勇者','反甲','命中','回复','圣树','大物防','大魔防','愤怒','格挡','治疗','混乱','铁序','防御','雕像','魔抗','龙心','龙血','龟壳'],
+};
+function getEquipmentPath(slotIdx, name) {
+  return 'zhuangbei/' + EQUIPMENT_SLOTS[slotIdx] + '/' + name + '.png';
+}
+
+// ===== Treasures (龙巢神器) =====
+// Filename format: HWTreasure_XXXX_custom.png  →  H = height (rows), W = width (cols) in grid cells
+const TREASURE_FILES = [
+  '22Treasure_3201_custom.png','22Treasure_3202_custom.png','22Treasure_3301_custom.png','22Treasure_3304_custom.png','22Treasure_3506_custom.png',
+  '22Treasure_3404_custom.png','22Treasure_3501_custom.png','23Treasure_3502_custom.png','23Treasure_3503_custom.png',
+  '22Treasure_3504_custom.png','23Treasure_3505_custom.png','22Treasure_3608_custom.png','22Treasure_3613_custom.png','22TreasureAT_3507.png',
+  '23Treasure_3302_custom.png','23Treasure_3303_custom.png','23Treasure_3401_custom.png','23Treasure_3402_custom.png',
+  '23Treasure_3603_custom.png','23Treasure_3605_custom.png','23Treasure_3609_custom.png',
+  '43Treasure_3403_custom.png','43Treasure_3602_custom.png','43Treasure_3604_custom.png','43Treasure_3611_custom.png','43Treasure_3612_custom.png',
+  '44Treasure_3601_custom.png',
+];
+const TREASURES = TREASURE_FILES.map(f => {
+  const m = f.match(/^(\d)(\d)Treasure[A-Z]*_/);
+  return { file: f, h: m ? parseInt(m[1]) : 1, w: m ? parseInt(m[2]) : 1 };
+});
+function getTreasurePath(file) {
+  if (CUSTOM_TREASURE_MAP[file]) return CUSTOM_TREASURE_MAP[file].dataUrl;
+  return 'longchao/' + file;
+}
+// Combined treasure lookup (built-in + custom uploaded)
+function findTreasure(file) {
+  return TREASURES.find(x => x.file === file) || CUSTOM_TREASURES.find(x => x.file === file) || null;
+}
+function allTreasures() {
+  return TREASURES.concat(CUSTOM_TREASURES);
 }
 
 function canPlaceInSlot(name, slotIdx) {
   const job = getJobClass(name);
-  const col = slotIdx % 3; // 0=后排, 1=中排, 2=前排
-  if (job === 1) return col === 2;       // 守卫 → 前排
-  if (job === 4) return col >= 1;        // 战士 → 前排+中排
-  if ([2,5,6].includes(job)) return col <= 1; // 牧师/射手/法师 → 中排+后排
-  return true; // 刺客 → 任意
+  const col = slotIdx % 3;
+  if (job === 1) return col === 2;
+  if (job === 4) return col >= 1;
+  if ([2,5,6].includes(job)) return col <= 1;
+  return true;
 }
-
 function getSlotRestriction(col) {
   if (col === 2) return '前排';
   if (col === 1) return '中排';
   return '后排';
 }
 
-function isMobile() { return window.innerWidth <= 768; }
-
-function adjustLayout() {
-  const rp = document.getElementById('poolView');
-  const lb = document.getElementById('leftBody');
-  if (isMobile()) {
-    if (rp.parentElement !== lb) lb.appendChild(rp);
-  } else {
-    const app = document.querySelector('.app');
-    if (rp.parentElement !== app) app.appendChild(rp);
-  }
-}
+const SHOWCASE_FALLBACK = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="210"><rect fill="#1a1410" width="160" height="210"/><text x="80" y="115" text-anchor="middle" fill="#555" font-size="44">🐉</text></svg>');
+const SLOT_FALLBACK = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="84" height="84"><rect fill="#1a1410" width="84" height="84"/><circle cx="42" cy="36" r="14" fill="#555"/><rect x="26" y="56" width="32" height="18" rx="6" fill="#555"/></svg>');
 
 const $ = id => document.getElementById(id);
-const poolGrid = $('poolGrid');
-const lineupGrid = $('lineupGrid');
 const statusbar = $('statusbar');
 const charCount = $('charCount');
-const dragonList = $('dragonList');
 let poolJobFilter = '全部';
 let poolFactionFilter = '全部';
+let selectedChar = null;
 
 // ===== Dragons =====
 const DRAGONS = [
-  { name:'元素回响', file:'card_myth_8501_custom.png', stars:5, lv:80, longyu:['MythsMagicIcon_801015.png','MythsMagicIcon_802015.png','MythsMagicIcon_803025.png','MythsMagicIcon_804016.png'] },
-  { name:'旷野之灵', file:'card_myth_8502_custom.png', stars:4, lv:72, longyu:['MythsMagicIcon_801015.png','MythsMagicIcon_802015.png','MythsMagicIcon_803025.png','MythsMagicIcon_804016.png'] },
-  { name:'奥术智慧', file:'card_myth_8503_custom.png', stars:5, lv:78, longyu:['MythsMagicIcon_801015.png','MythsMagicIcon_802015.png','MythsMagicIcon_803025.png','MythsMagicIcon_804016.png'] },
-  { name:'圣堂荣光', file:'card_myth_8504_custom.png', stars:4, lv:65, longyu:['MythsMagicIcon_801015.png','MythsMagicIcon_802015.png','MythsMagicIcon_803025.png','MythsMagicIcon_804016.png'] },
-  { name:'彼岸再临', file:'card_myth_8505_custom.png', stars:3, lv:58, longyu:['MythsMagicIcon_801015.png','MythsMagicIcon_802015.png','MythsMagicIcon_803025.png','MythsMagicIcon_804016.png'] },
-  { name:'幻境秘影', file:'card_myth_8506_custom.png', stars:5, lv:85, longyu:['MythsMagicIcon_801015.png','MythsMagicIcon_802015.png','MythsMagicIcon_803025.png','MythsMagicIcon_804016.png'] },
+  { name:'元素回响', file:'card_myth_8501_custom.png', stars:5, lv:80 },
+  { name:'旷野之灵', file:'card_myth_8502_custom.png', stars:4, lv:72 },
+  { name:'奥术智慧', file:'card_myth_8503_custom.png', stars:5, lv:78 },
+  { name:'圣堂荣光', file:'card_myth_8504_custom.png', stars:4, lv:65 },
+  { name:'彼岸再临', file:'card_myth_8505_custom.png', stars:3, lv:58 },
+  { name:'幻境秘影', file:'card_myth_8506_custom.png', stars:5, lv:85 },
 ];
 let activeDragon = null;
 
-const SVG_FALLBACK = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="170" height="100"><rect fill="#1a1a30" width="170" height="100"/><text x="85" y="60" text-anchor="middle" fill="#555" font-size="30">🐉</text></svg>');
-const SHOWCASE_FALLBACK = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="160" height="210"><rect fill="#1a1a30" width="160" height="210"/><text x="80" y="115" text-anchor="middle" fill="#555" font-size="44">🐉</text></svg>');
-const SLOT_FALLBACK = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="84" height="84"><rect fill="#1a1a30" width="84" height="84"/><circle cx="42" cy="36" r="14" fill="#555"/><rect x="26" y="56" width="32" height="18" rx="6" fill="#555"/></svg>');
-
-function updateDragonShowcase(d) {
-  const img = document.getElementById('showcaseImg');
-  const name = document.getElementById('showcaseName');
-  img.src = 'ass/龙/' + d.file;
-  img.onerror = function() { this.src = SHOWCASE_FALLBACK; };
-  name.textContent = d.name;
-  // Update longyu icons
-  document.querySelectorAll('#longyuGrid .longyu-slot').forEach((slot, i) => {
-    const file = getLongyuSelection(d, i);
-    const img = slot.querySelector('.longyu-icon');
-    const name = slot.querySelector('.longyu-name');
-    img.src = 'longyu/' + file;
-    img.style.display = '';
-    img.title = file;
-    img.onclick = function(e) { openLongyuModal(d, i); e.stopPropagation(); };
-    name.textContent = LONGYU_NAMES[file] || file;
-  });
-}
-
+// ===== Longyu Modal =====
 let modalSlotIdx = null;
-let modalDragon = null;
+let modalDragonRef = null; // {cardId, slotIdx}
 
-function openLongyuModal(dragon, slotIdx) {
-  modalDragon = dragon;
-  modalSlotIdx = slotIdx;
+function openLongyuModal(cardId, slotIdx) {
+  modalDragonRef = { cardId, slotIdx };
+  const card = lineupCards.find(c => c.id === cardId);
+  if (!card) return;
+
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.onclick = function(e) { if (e.target === this) closeModal(); };
@@ -794,28 +1100,72 @@ function openLongyuModal(dragon, slotIdx) {
   const grid = document.createElement('div');
   grid.className = 'modal-grid';
 
-  const currentFile = getLongyuSelection(dragon, slotIdx);
+  const currentFile = card.longyu[slotIdx] || LONGYU_BY_SLOT[slotIdx][0];
 
   LONGYU_BY_SLOT[slotIdx].forEach(file => {
     const item = document.createElement('div');
     item.className = 'modal-item' + (file === currentFile ? ' active' : '');
     const img = document.createElement('img');
-    img.src = 'longyu/' + file;
+    img.src = getLongyuPath(file);
     img.onerror = function() { this.style.display = 'none'; };
     img.draggable = false;
     item.appendChild(img);
     const name = document.createElement('div');
     name.className = 'longyu-name';
-    name.textContent = LONGYU_NAMES[file] || file;
+    name.textContent = getLongyuName(file);
     item.appendChild(name);
     item.onclick = function() {
-      setLongyuSelection(dragon, slotIdx, file);
-      updateDragonShowcase(dragon);
+      card.longyu[slotIdx] = file;
+      renderLineupCard(card);
       closeModal();
-      setStatus('龙语已更换：' + file, true);
+      setStatus('龙语已更换：' + getLongyuName(file), true);
+      saveAll();
     };
     grid.appendChild(item);
   });
+
+  // Custom uploaded longyu for this slot
+  (CUSTOM_LONGYU[slotIdx] || []).forEach(cy => {
+    const item = document.createElement('div');
+    item.className = 'modal-item' + (cy.key === currentFile ? ' active' : '');
+    const img = document.createElement('img');
+    img.src = cy.dataUrl;
+    img.draggable = false;
+    item.appendChild(img);
+    const name = document.createElement('div');
+    name.className = 'longyu-name';
+    name.textContent = cy.name;
+    item.appendChild(name);
+    // Delete button (top-right X)
+    const delBtn = document.createElement('div');
+    delBtn.className = 'modal-del-btn';
+    delBtn.textContent = '✕';
+    delBtn.title = '删除此自定义龙语';
+    delBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (!confirm('确定删除自定义龙语「' + cy.name + '」吗？')) return;
+      deleteCustomLongyu(cy.key, slotIdx);
+      closeModal();
+      setStatus('已删除自定义龙语：' + cy.name, true);
+    });
+    item.appendChild(delBtn);
+    item.onclick = function() {
+      card.longyu[slotIdx] = cy.key;
+      renderLineupCard(card);
+      closeModal();
+      setStatus('龙语已更换：' + cy.name, true);
+      saveAll();
+    };
+    grid.appendChild(item);
+  });
+
+  // Upload cell (last position)
+  const uploadItem = document.createElement('div');
+  uploadItem.className = 'modal-item modal-upload';
+  uploadItem.title = '上传自定义龙语（文件名即龙语名称）';
+  uploadItem.innerHTML = '<div class="modal-upload-inner"><span class="modal-upload-icon">＋</span><span class="modal-upload-label">上传龙语</span></div>';
+  uploadItem.onclick = function() { uploadCustomLongyu(slotIdx, card); };
+  grid.appendChild(uploadItem);
 
   content.appendChild(title);
   content.appendChild(grid);
@@ -827,139 +1177,1273 @@ function closeModal() {
   const overlay = document.querySelector('.modal-overlay');
   if (overlay) overlay.remove();
   modalSlotIdx = null;
-  modalDragon = null;
+  modalDragonRef = null;
 }
 
-function initDragonList() {
-  DRAGONS.forEach((d, i) => {
-    const card = document.createElement('div');
-    card.className = 'dragon-card' + (i === 0 ? ' active' : '');
-    card.innerHTML = `
-      <div class="dragon-img-wrap"><img src="ass/龙/${d.file}" alt="${d.name}" onerror="this.src='${SVG_FALLBACK}'"></div>
-      <div class="name">${d.name}</div>
-    `;
-    card.addEventListener('click', function() {
-      document.querySelectorAll('.dragon-card').forEach(c => c.classList.remove('active'));
-      this.classList.add('active');
-      activeDragon = d;
-      updateDragonShowcase(d);
-      setStatus('已选择巨龙：' + d.name);
+// ===== Custom image upload helpers =====
+function readImageFile(file, cb) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) { cb(e.target.result, file.name); };
+  reader.readAsDataURL(file);
+}
+function openFilePicker(cb) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = function() {
+    if (input.files && input.files[0]) cb(input.files[0]);
+  };
+  input.click();
+}
+
+// Upload custom treasure: filename first 2 digits = height × width (e.g. "22" = 2×2)
+function uploadCustomTreasure(card) {
+  openFilePicker(function(file) {
+    readImageFile(file, function(dataUrl, fname) {
+      const baseName = fname.replace(/\.[^.]+$/, '');
+      const m = baseName.match(/^(\d)(\d)/);
+      const h = m ? parseInt(m[1]) : 1;
+      const w = m ? parseInt(m[2]) : 1;
+      const key = 'custom_' + Date.now() + '_' + baseName;
+      const entry = { file: key, dataUrl: dataUrl, h: h, w: w };
+      CUSTOM_TREASURES.push(entry);
+      CUSTOM_TREASURE_MAP[key] = entry;
+      saveCustomImages();
+      renderDragonNestCard(card);
+      setStatus('已上传自定义神器：' + baseName + '（' + h + '×' + w + '）', true);
     });
-    dragonList.appendChild(card);
   });
-  activeDragon = DRAGONS[0];
-  updateDragonShowcase(activeDragon);
 }
 
-// ===== Lineup =====
-let lineup = new Array(9).fill(null);
-let selectedChar = null;
-let skillOrder = [];
-let skillOrderToggles = {};
-let skillOrderEnabled = true;
-let dragSkillIdx = null;
-let movingChar = null; // for moving between slots
-
-function lineupCount() { return lineup.filter(Boolean).length; }
-function isInLineup(name) {
-  return lineup.includes(name);
-}
-
-function renderLineup() {
-  lineupGrid.innerHTML = '';
-  lineup.forEach((name, i) => {
-    const slot = document.createElement('div');
-    slot.className = 'lineup-slot' + (name ? ' filled' : '');
-    slot.dataset.idx = i;
-
-    if (name) {
-      const bg = document.createElement('img');
-      bg.className = 'slot-char-bg';
-      bg.src = isSSR(name) ? 'SSR.png' : 'SR.png';
-      bg.onerror = function() { this.style.display = 'none'; };
-
-      const avatar = document.createElement('img');
-      avatar.className = 'slot-char-img';
-      avatar.src = getSpriteFile(name);
-      avatar.onerror = function() { this.src = SLOT_FALLBACK; };
-      avatar.draggable = false;
-
-      const badge = document.createElement('img');
-      badge.className = 'slot-char-badge';
-      badge.src = 'S6.png';
-      badge.onerror = function() { this.style.display = 'none'; };
-
-      const jobIcon = document.createElement('img');
-      jobIcon.className = 'slot-char-job';
-      jobIcon.src = 'common_Job_' + getJobClass(name) + '.png';
-      jobIcon.onerror = function() { this.style.display = 'none'; };
-
-      slot.appendChild(bg);
-      slot.appendChild(avatar);
-      slot.appendChild(badge);
-      slot.appendChild(jobIcon);
-      slot.title = name + ' (左键换位，右键移除)';
-      slot.draggable = true;
-
-      slot.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-        const idx = parseInt(this.dataset.idx);
-        const removed = lineup[idx];
-        lineup[idx] = null;
-        renderLineup();
-        applyPoolFilter();
-        setStatus('已移除 ' + removed);
-      });
-
-      slot.addEventListener('dragstart', function(e) {
-        this.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', name);
-      });
-      slot.addEventListener('dragend', function(e) {
-        this.classList.remove('dragging');
-        document.querySelectorAll('.lineup-slot').forEach(s => s.classList.remove('drag-over'));
-      });
-      // Touch long-press for mobile move mode
-      let lpTimer = null;
-      slot.addEventListener('touchstart', function(e) {
-        if (!isMobile()) return;
-        lpTimer = setTimeout(() => {
-          this.classList.add('lp-active');
-          const idx = parseInt(this.dataset.idx);
-          const cur = lineup[idx];
-          if (cur && !movingChar) {
-            movingChar = cur;
-            document.querySelectorAll('.lineup-slot').forEach(s => {
-              const si = parseInt(s.dataset.idx);
-              if (si !== idx && canPlaceInSlot(cur, si)) {
-                s.style.boxShadow = 'inset 0 0 20px rgba(108,108,255,0.2)';
-              }
-            });
-            this.style.borderColor = '#ffd700';
-            setStatus('长按进入移动模式：点击其他空槽放置 ' + cur);
-          }
-        }, 500);
-      });
-      slot.addEventListener('touchmove', function(e) { clearTimeout(lpTimer); });
-      slot.addEventListener('touchend', function(e) { clearTimeout(lpTimer); });
-    } else {
-      const col = i % 3;
-      slot.innerHTML = '<div class="slot-empty-icon" style="font-size:40px;color:var(--text2);opacity:0.3;">+</div>';
-      slot.title = selectedChar ? '点击放入 ' + selectedChar : '空位';
+function deleteCustomTreasure(file) {
+  const idx = CUSTOM_TREASURES.findIndex(t => t.file === file);
+  if (idx >= 0) CUSTOM_TREASURES.splice(idx, 1);
+  delete CUSTOM_TREASURE_MAP[file];
+  // Also remove from any dragon nest card
+  dragonNestCards.forEach(card => {
+    if (Array.isArray(card.artifacts)) {
+      card.artifacts = card.artifacts.filter(a => a.file !== file);
     }
+  });
+  saveAll();
+  saveCustomImages();
+}
 
-    slot.addEventListener('dragover', function(e) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      const dropName = e.dataTransfer.getData('text/plain');
-      if (dropName) {
-        const idx = parseInt(this.dataset.idx);
-        if (!lineup[idx] && !canPlaceInSlot(dropName, idx)) {
-          this.classList.add('forbidden');
+function deleteCustomLongyu(key, slotIdx) {
+  if (CUSTOM_LONGYU[slotIdx]) {
+    CUSTOM_LONGYU[slotIdx] = CUSTOM_LONGYU[slotIdx].filter(c => c.key !== key);
+  }
+  delete CUSTOM_LONGYU_MAP[key];
+  // Also reset any lineup card that was using this longyu
+  lineupCards.forEach(card => {
+    if (Array.isArray(card.longyu)) {
+      card.longyu = card.longyu.map(f => f === key ? (LONGYU_BY_SLOT[slotIdx][0] || null) : f);
+      renderLineupCard(card);
+    }
+  });
+  saveAll();
+  saveCustomImages();
+}
+
+function deleteCustomChar(name) {
+  const idx = CUSTOM_CHARS.findIndex(c => c.name === name);
+  if (idx >= 0) CUSTOM_CHARS.splice(idx, 1);
+  delete CUSTOM_CHAR_MAP[name];
+  // Also remove from any lineup slot
+  lineupCards.forEach(card => {
+    if (Array.isArray(card.lineup)) {
+      const had = card.lineup.includes(name);
+      card.lineup = card.lineup.map(n => n === name ? null : n);
+      if (had) {
+        updateSkillOrderForCard(card);
+        renderLineupCard(card);
+      }
+    }
+  });
+  // Remove from DOM
+  const cardEl = document.querySelector('.char-card[data-name="' + name.replace(/"/g, '\\"') + '"]');
+  if (cardEl) cardEl.remove();
+  // Update count
+  if (charCount) charCount.textContent = (CHAR_NAMES.length + CUSTOM_CHARS.length) + ' 个角色';
+  saveAll();
+  saveCustomImages();
+}
+
+// Upload custom longyu: filename (without ext) = longyu name
+function uploadCustomLongyu(slotIdx, card) {
+  openFilePicker(function(file) {
+    readImageFile(file, function(dataUrl, fname) {
+      const baseName = fname.replace(/\.[^.]+$/, '');
+      const key = 'custom_longyu_' + slotIdx + '_' + Date.now() + '_' + baseName;
+      const entry = { key: key, dataUrl: dataUrl, name: baseName };
+      CUSTOM_LONGYU[slotIdx].push(entry);
+      CUSTOM_LONGYU_MAP[key] = entry;
+      saveCustomImages();
+      // Auto-select the newly uploaded longyu
+      card.longyu[slotIdx] = key;
+      renderLineupCard(card);
+      closeModal();
+      setStatus('已上传自定义龙语：' + baseName, true);
+      saveAll();
+    });
+  });
+}
+
+// Upload custom character: first 2 digits = faction codes (元素=1 旷野=2 奥术=3 圣堂=4 彼岸=5 幻境=6), 3rd digit = job (守卫=1 牧师=2 刺客=3 战士=4 射手=5 法师=6)
+const JOB_CODE = { '1':'守卫', '2':'牧师', '3':'刺客', '4':'战士', '5':'射手', '6':'法师' };
+function uploadCustomChar() {
+  openFilePicker(function(file) {
+    readImageFile(file, function(dataUrl, fname) {
+      const baseName = fname.replace(/\.[^.]+$/, '');
+      const m = baseName.match(/^(\d)(\d)(\d)/);
+      let factions = [];
+      let job = 3; // default 刺客 (can be placed anywhere)
+      if (m) {
+        const f1 = FACTION_CODE[m[1]];
+        const f2 = FACTION_CODE[m[2]];
+        if (f1) factions.push(f1);
+        if (f2 && f2 !== f1) factions.push(f2);
+        if (factions.length === 0) factions = ['元素'];
+        const jobNum = parseInt(m[3]);
+        if (jobNum >= 1 && jobNum <= 6) job = jobNum;
+      } else {
+        factions = ['元素'];
+      }
+      const charName = baseName.replace(/^\d{3}/, '') || baseName;
+      // Avoid name collision with existing chars
+      let finalName = charName;
+      let n = 2;
+      while (CHAR_NAME_TO_ID[finalName] || CUSTOM_CHAR_MAP[finalName]) {
+        finalName = charName + '(' + n + ')';
+        n++;
+      }
+      const entry = { name: finalName, dataUrl: dataUrl, factions: factions, job: job };
+      CUSTOM_CHARS.push(entry);
+      CUSTOM_CHAR_MAP[finalName] = entry;
+      saveCustomImages();
+      appendCustomCharToPool(entry);
+      applyPoolFilter();
+      charCount.textContent = (CHAR_NAMES.length + CUSTOM_CHARS.length) + ' 个角色';
+      const jobName = JOB_NAMES[job] || '未知';
+      setStatus('已上传自定义角色：' + finalName + '（' + factions.join('+') + '·' + jobName + '）', true);
+    });
+  });
+}
+
+function appendCustomCharToPool(entry) {
+  const card = document.createElement('div');
+  card.className = 'char-card char-card-custom';
+  card.dataset.name = entry.name;
+  const jobName = JOB_NAMES[entry.job] || '刺客';
+  card.title = entry.name + '（自定义·' + entry.factions.join('+') + '·' + jobName + '）';
+
+  const bg = document.createElement('img');
+  bg.className = 'char-bg';
+  bg.src = 'SR.png';
+  bg.onerror = function() { this.style.display = 'none'; };
+  card.appendChild(bg);
+
+  const avatar = document.createElement('img');
+  avatar.className = 'char-avatar';
+  avatar.src = entry.dataUrl;
+  avatar.onerror = function() { this.style.display = 'none'; };
+  card.appendChild(avatar);
+
+  // Job badge (same as built-in chars)
+  const jobImg = document.createElement('img');
+  jobImg.className = 'char-job';
+  jobImg.src = 'common_Job_' + (entry.job || 3) + '.png';
+  jobImg.onerror = function() { this.style.display = 'none'; };
+  card.appendChild(jobImg);
+
+  card.draggable = true;
+  card.addEventListener('dragstart', function(e) {
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', JSON.stringify({ from: 'pool', name: entry.name }));
+    e.dataTransfer.setData('text/custom-char', entry.name);
+  });
+  card.addEventListener('dragend', function(e) {
+    this.classList.remove('dragging');
+    document.querySelectorAll('.lc-slot').forEach(s => s.classList.remove('drag-over', 'forbidden'));
+  });
+
+  card.addEventListener('click', function() {
+    if (selectedChar === entry.name) {
+      this.classList.remove('selected');
+      selectedChar = null;
+      setStatus('已取消选择');
+    } else {
+      document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
+      this.classList.add('selected');
+      selectedChar = entry.name;
+      setStatus('已选择：' + entry.name + '，点击阵容空位上阵');
+    }
+  });
+
+  card.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    for (const c of lineupCards) {
+      if (c.lineup.filter(Boolean).length >= 6) continue;
+      if (isCharInCard(entry.name, c)) continue;
+      for (let i = 0; i < 9; i++) {
+        if (!c.lineup[i] && canPlaceInSlot(entry.name, i)) {
+          c.lineup[i] = entry.name;
+          updateSkillOrderForCard(c);
+          renderLineupCard(c);
+          selectedChar = null;
+          document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
+          applyPoolFilter();
+          setStatus('右键上阵：' + entry.name + ' → ' + c.title, true);
+          saveAll();
           return;
         }
       }
+    }
+    setStatus('没有可放置的空位');
+  });
+
+  // Insert before the upload cell (which is always last)
+  const uploadCell = poolGrid.querySelector('.pool-upload-cell');
+  if (uploadCell) poolGrid.insertBefore(card, uploadCell);
+  else poolGrid.appendChild(card);
+}
+
+// ===== Custom images persistence =====
+function saveCustomImages() {
+  try {
+    localStorage.setItem(CUSTOM_IMG_KEY, JSON.stringify({
+      treasures: CUSTOM_TREASURES,
+      longyu: CUSTOM_LONGYU,
+      chars: CUSTOM_CHARS,
+    }));
+  } catch(e) {
+    setStatus('自定义图片保存失败（存储空间不足）');
+  }
+}
+function loadCustomImages() {
+  try {
+    const raw = localStorage.getItem(CUSTOM_IMG_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    (data.treasures || []).forEach(t => {
+      CUSTOM_TREASURES.push(t);
+      CUSTOM_TREASURE_MAP[t.file] = t;
+    });
+    (data.longyu || [[],[],[],[]]).forEach((arr, slot) => {
+      if (!Array.isArray(arr)) return;
+      arr.forEach(cy => {
+        CUSTOM_LONGYU[slot].push(cy);
+        CUSTOM_LONGYU_MAP[cy.key] = cy;
+      });
+    });
+    (data.chars || []).forEach(c => {
+      CUSTOM_CHARS.push(c);
+      CUSTOM_CHAR_MAP[c.name] = c;
+    });
+  } catch(e) {}
+}
+
+// ===== Equipment Modal =====
+let modalEquipmentRef = null;
+function openEquipmentModal(cardId, slotIdx) {
+  modalEquipmentRef = { cardId, slotIdx };
+  const card = equipmentCards.find(c => c.id === cardId);
+  if (!card) return;
+  const category = EQUIPMENT_SLOTS[slotIdx];
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.onclick = function(e) { if (e.target === this) closeModal(); };
+
+  const content = document.createElement('div');
+  content.className = 'modal-content';
+
+  const title = document.createElement('div');
+  title.className = 'modal-title';
+  title.textContent = '选择装备 - ' + category;
+
+  const grid = document.createElement('div');
+  grid.className = 'modal-grid';
+
+  const currentName = card.slots[slotIdx];
+
+  EQUIPMENT_FILES[category].forEach(name => {
+    const item = document.createElement('div');
+    item.className = 'modal-item' + (name === currentName ? ' active' : '');
+    const img = document.createElement('img');
+    img.src = getEquipmentPath(slotIdx, name);
+    img.onerror = function() { this.style.display = 'none'; };
+    img.draggable = false;
+    item.appendChild(img);
+    const nameLabel = document.createElement('div');
+    nameLabel.className = 'longyu-name';
+    nameLabel.textContent = name;
+    item.appendChild(nameLabel);
+    item.onclick = function() {
+      card.slots[slotIdx] = name;
+      renderEquipmentCard(card);
+      closeModal();
+      setStatus('已装备 ' + category + '：' + name, true);
+      saveAll();
+    };
+    grid.appendChild(item);
+  });
+
+  content.appendChild(title);
+  content.appendChild(grid);
+  overlay.appendChild(content);
+  document.body.appendChild(overlay);
+}
+
+// ===== Canvas Context Menu =====
+let canvasMenuEl = null;
+function showCanvasContextMenu(screenX, screenY, cx, cy) {
+  closeCanvasMenu();
+  const menu = document.createElement('div');
+  menu.className = 'canvas-menu';
+  const items = [
+    { type: 'lineup',      icon: '⊕', label: '新阵容' },
+    { type: 'equipment',   icon: '⚔', label: '装备' },
+    { type: 'dragonNest',  icon: '☁', label: '龙巢' },
+  ];
+  items.forEach(it => {
+    const btn = document.createElement('button');
+    btn.className = 'canvas-menu-item';
+    btn.innerHTML = `<span class="cmi-icon">${it.icon}</span><span>${it.label}</span>`;
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      closeCanvasMenu();
+      let card;
+      if (it.type === 'lineup') card = createLineupCard(cx, cy);
+      else if (it.type === 'equipment') card = createEquipmentCard(cx, cy);
+      else if (it.type === 'dragonNest') card = createDragonNestCard(cx, cy);
+      setStatus('已添加' + it.label);
+      // Bring into view if it lands off-screen
+      setTimeout(fitCanvasViewIfOffscreen, 30);
+    });
+    menu.appendChild(btn);
+  });
+  document.body.appendChild(menu);
+  // Clamp within viewport
+  const mw = menu.offsetWidth, mh = menu.offsetHeight;
+  const px = Math.min(screenX, window.innerWidth - mw - 6);
+  const py = Math.min(screenY, window.innerHeight - mh - 6);
+  menu.style.left = Math.max(6, px) + 'px';
+  menu.style.top = Math.max(6, py) + 'px';
+  canvasMenuEl = menu;
+}
+function closeCanvasMenu() {
+  if (canvasMenuEl) { canvasMenuEl.remove(); canvasMenuEl = null; }
+}
+function fitCanvasViewIfOffscreen() {
+  // Light-touch: only refit if there are cards far outside the viewport
+  const container = $('canvasContainer');
+  const rect = container.getBoundingClientRect();
+  const all = getAllCards();
+  let anyOff = false;
+  all.forEach(c => {
+    const sx = c.x * canvasScale + canvasX;
+    const sy = c.y * canvasScale + canvasY;
+    if (sx < 20 || sy < 20 || sx > rect.width - 60 || sy > rect.height - 60) anyOff = true;
+  });
+  if (anyOff) fitCanvasView();
+}
+
+// ===== Infinite Canvas =====
+let canvasX = 0, canvasY = 0, canvasScale = 1;
+let isCanvasDragging = false;
+let canvasDragStartX = 0, canvasDragStartY = 0;
+let canvasDragStartPanX = 0, canvasDragStartPanY = 0;
+
+function updateCanvasTransform() {
+  const inner = $('canvasInner');
+  // Round translate to avoid sub-pixel rendering issues with CSS Grid
+  // (fractional px offsets cause grid columns to squish/stretch)
+  const rx = Math.round(canvasX);
+  const ry = Math.round(canvasY);
+  inner.style.transform = `translate(${rx}px, ${ry}px) scale(${canvasScale})`;
+  const total = getAllCards().length;
+  $('canvasInfo').textContent = `缩放 ${Math.round(canvasScale * 100)}% | ${total} 个卡片`;
+  // Promote to a composited layer while interacting for smooth panning/zooming,
+  // then demote shortly after to force a crisp re-rasterization at the final scale.
+  // Without this, the cached downscaled texture lingers blurry after zooming back in.
+  inner.style.willChange = 'transform';
+  clearTimeout(inner._rasterTimer);
+  inner._rasterTimer = setTimeout(() => {
+    inner.style.willChange = '';
+    // Force reflow so the browser drops the cached texture and repaints crisply.
+    void inner.offsetWidth;
+  }, 120);
+  requestRedraw();
+}
+
+function initCanvas() {
+  const container = $('canvasContainer');
+
+  // ===== Trash zone: drop custom images here to delete =====
+  const trashZone = $('trashZone');
+  if (trashZone) {
+    // Activate trash only when dragging a custom image
+    function isCustomDrag(e) {
+      return e.dataTransfer && e.dataTransfer.types && (
+        e.dataTransfer.types.includes('text/custom-treasure') ||
+        e.dataTransfer.types.includes('text/custom-longyu') ||
+        e.dataTransfer.types.includes('text/custom-char')
+      );
+    }
+    window.addEventListener('dragstart', function(e) {
+      if (isCustomDrag(e)) trashZone.classList.add('trash-active');
+    }, true);
+    window.addEventListener('dragend', function() {
+      trashZone.classList.remove('trash-active', 'trash-hover');
+    }, true);
+    trashZone.addEventListener('dragover', function(e) {
+      if (!isCustomDrag(e)) return;
+      e.preventDefault();
+      // Use 'copy' to match the picker's effectAllowed='copy' for treasures,
+      // and 'move' for longyu/char. 'all' would also work but copy is safest.
+      const types = e.dataTransfer.types;
+      if (types.includes('text/custom-treasure')) e.dataTransfer.dropEffect = 'copy';
+      else e.dataTransfer.dropEffect = 'move';
+      trashZone.classList.add('trash-hover');
+    });
+    trashZone.addEventListener('dragleave', function(e) {
+      if (e.relatedTarget && trashZone.contains(e.relatedTarget)) return;
+      trashZone.classList.remove('trash-hover');
+    });
+    trashZone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      trashZone.classList.remove('trash-active', 'trash-hover');
+      const dt = e.dataTransfer;
+      // Custom treasure
+      const trFile = dt.getData('text/custom-treasure');
+      if (trFile) {
+        deleteCustomTreasure(trFile);
+        dragonNestCards.forEach(c => renderDragonNestCard(c));
+        setStatus('已删除自定义神器', true);
+        return;
+      }
+      // Custom longyu
+      const lyRaw = dt.getData('text/custom-longyu');
+      if (lyRaw) {
+        try {
+          const { key, slotIdx } = JSON.parse(lyRaw);
+          deleteCustomLongyu(key, slotIdx);
+          setStatus('已删除自定义龙语', true);
+          return;
+        } catch(_) {}
+      }
+      // Custom char
+      const chName = dt.getData('text/custom-char');
+      if (chName) {
+        deleteCustomChar(chName);
+        setStatus('已删除自定义角色', true);
+        return;
+      }
+    });
+  }
+
+  container.addEventListener('wheel', function(e) {
+    // Let scrollable panels (treasure picker grid) handle their own scroll
+    if (e.target.closest('.dn-picker-grid') || e.target.closest('.dn-picker-panel') || e.target.closest('.dn-picker-inner')) return;
+    e.preventDefault();
+    const rect = container.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    const newScale = Math.min(2, Math.max(0.3, canvasScale * delta));
+    // Zoom toward mouse
+    canvasX = mx - (mx - canvasX) * (newScale / canvasScale);
+    canvasY = my - (my - canvasY) * (newScale / canvasScale);
+    canvasScale = newScale;
+    updateCanvasTransform();
+  }, { passive: false });
+
+  // Right-click on blank canvas → context menu to add cards
+  container.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    closeCanvasMenu();
+    // If right-clicked inside any card, let the card's own handlers deal with it
+    if (e.target.closest('.lineup-card')) return;
+    const rect = container.getBoundingClientRect();
+    const cx = (e.clientX - rect.left - canvasX) / canvasScale;
+    const cy = (e.clientY - rect.top - canvasY) / canvasScale;
+    showCanvasContextMenu(e.clientX, e.clientY, cx, cy);
+  });
+
+  // Close menu on any left-click, escape, scroll, or resize
+  window.addEventListener('mousedown', function(e) {
+    if (!e.target.closest('.canvas-menu')) closeCanvasMenu();
+  });
+  window.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeCanvasMenu(); });
+  container.addEventListener('scroll', closeCanvasMenu, true);
+  window.addEventListener('blur', closeCanvasMenu);
+
+  container.addEventListener('mousedown', function(e) {
+    if (e.button !== 0) return;
+    // Check if clicked on a lineup card or its interactive elements
+    const target = e.target.closest('.lineup-card');
+    const interactive = e.target.closest('.lc-slot, .lc-btn, .lc-dragon-select, .lc-title-input, .so-individual-toggle, .lc-longyu-slot, .lc-so-item, .ec-slot, .dn-cell, .lc-mini-btn, .dn-picker-item, .dn-picker-upload, .dn-picker-toggle, .dn-picker-panel, .dn-picker-inner, .dn-picker-grid');
+    if (interactive) return;
+    // Start canvas pan
+    isCanvasDragging = true;
+    canvasDragStartX = e.clientX;
+    canvasDragStartY = e.clientY;
+    canvasDragStartPanX = canvasX;
+    canvasDragStartPanY = canvasY;
+    container.classList.add('grabbing');
+    e.preventDefault();
+  });
+
+  window.addEventListener('mousemove', function(e) {
+    if (!isCanvasDragging) return;
+    canvasX = canvasDragStartPanX + (e.clientX - canvasDragStartX);
+    canvasY = canvasDragStartPanY + (e.clientY - canvasDragStartY);
+    updateCanvasTransform();
+  });
+
+  window.addEventListener('mouseup', function(e) {
+    if (isCanvasDragging) {
+      isCanvasDragging = false;
+      $('canvasContainer').classList.remove('grabbing');
+    }
+  });
+
+  // Touch support for canvas panning
+  let touchStartX, touchStartY, touchStartPanX, touchStartPanY, touchStartTime;
+  container.addEventListener('touchstart', function(e) {
+    if (e.touches.length === 1) {
+      const target = e.target.closest('.lineup-card');
+      if (e.target.closest('.lc-slot, .lc-btn, .lc-dragon-select, .lc-title-input, .so-individual-toggle, .lc-longyu-slot, .lc-so-item, .ec-slot, .dn-cell, .lc-mini-btn, .dn-picker-item, .dn-picker-toggle, .dn-picker-panel, .dn-picker-inner, .dn-picker-grid')) return;
+      const t = e.touches[0];
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+      touchStartPanX = canvasX;
+      touchStartPanY = canvasY;
+      touchStartTime = Date.now();
+    }
+  });
+  container.addEventListener('touchmove', function(e) {
+    if (e.touches.length === 1 && touchStartTime) {
+      e.preventDefault();
+      const t = e.touches[0];
+      canvasX = touchStartPanX + (t.clientX - touchStartX);
+      canvasY = touchStartPanY + (t.clientY - touchStartY);
+      updateCanvasTransform();
+    }
+  }, { passive: false });
+  container.addEventListener('touchend', function() { touchStartTime = null; });
+
+  $('zoomInBtn').addEventListener('click', () => { canvasScale = Math.min(2, canvasScale * 1.2); updateCanvasTransform(); });
+  $('zoomOutBtn').addEventListener('click', () => { canvasScale = Math.max(0.3, canvasScale * 0.8); updateCanvasTransform(); });
+  $('zoomFitBtn').addEventListener('click', fitCanvasView);
+
+  updateCanvasTransform();
+}
+
+function fitCanvasView() {
+  const container = $('canvasContainer');
+  const rect = container.getBoundingClientRect();
+  // Find bounding box of all cards
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  getAllCards().forEach(c => {
+    const fp = cardFootprint(c);
+    minX = Math.min(minX, c.x);
+    minY = Math.min(minY, c.y);
+    maxX = Math.max(maxX, c.x + fp.w);
+    maxY = Math.max(maxY, c.y + fp.h);
+  });
+  if (!isFinite(minX)) { canvasX = 50; canvasY = 50; canvasScale = 1; updateCanvasTransform(); return; }
+  const padding = 80;
+  const w = maxX - minX + padding * 2;
+  const h = maxY - minY + padding * 2;
+  const sx = rect.width / w;
+  const sy = rect.height / h;
+  canvasScale = Math.min(1.2, Math.min(sx, sy));
+  canvasX = (rect.width - w * canvasScale) / 2 - minX * canvasScale + padding * canvasScale;
+  canvasY = (rect.height - h * canvasScale) / 2 - minY * canvasScale + padding * canvasScale;
+  updateCanvasTransform();
+}
+
+// ===== Lineup Cards (Multiple) =====
+let lineupCards = [];
+let nextCardId = 1;
+
+function createLineupCard(x, y, options) {
+  const card = {
+    id: nextCardId,
+    x: x || 60,
+    y: y || 60,
+    title: (options && options.title) || ('阵容 ' + nextCardId),
+    dragonName: (options && options.dragonName) || (activeDragon ? activeDragon.name : DRAGONS[0].name),
+    lineup: new Array(9).fill(null),
+    longyu: LONGYU_BY_SLOT.map(s => s[0]),
+    skillOrder: [],
+    skillOrderToggles: {},
+  };
+  nextCardId++;
+  lineupCards.push(card);
+  renderLineupCard(card);
+  updateCanvasTransform();
+  saveAll();
+  return card;
+}
+
+function deleteLineupCard(cardId) {
+  const idx = lineupCards.findIndex(c => c.id === cardId);
+  if (idx === -1) return;
+  const el = document.getElementById('lc-' + cardId);
+  if (el) el.remove();
+  lineupCards.splice(idx, 1);
+  cleanupConnections();
+  updateCanvasTransform();
+  saveAll();
+  applyPoolFilter();
+  setStatus('已删除阵容');
+}
+
+// ===== Shared helpers for all card types =====
+function getAllCards() {
+  return [...lineupCards, ...equipmentCards, ...dragonNestCards];
+}
+// Approximate card footprint (used by fitCanvasView)
+function cardFootprint(c) {
+  if (c.type === 'equipment') return { w: 190, h: 290 };
+  if (c.type === 'dragonNest') return { w: 410, h: 470 };
+  return { w: 560, h: 600 }; // lineup
+}
+// Wires the standard card header (drag handle / title / duplicate / delete)
+function bindCardChrome(el, card, type, onDuplicate) {
+  el.querySelectorAll('[data-action]').forEach(elem => {
+    const action = elem.dataset.action;
+    if (action === 'move') {
+      let sx, sy, scx, scy;
+      elem.addEventListener('mousedown', function(e) {
+        e.stopPropagation();
+        sx = e.clientX; sy = e.clientY; scx = card.x; scy = card.y;
+        const onMove = (e) => {
+          card.x = scx + (e.clientX - sx) / canvasScale;
+          card.y = scy + (e.clientY - sy) / canvasScale;
+          el.style.left = card.x + 'px';
+          el.style.top = card.y + 'px';
+          requestRedraw();
+        };
+        const onUp = () => {
+          window.removeEventListener('mousemove', onMove);
+          window.removeEventListener('mouseup', onUp);
+          saveAll();
+        };
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+      });
+    } else if (action === 'title') {
+      elem.addEventListener('change', function() { card.title = this.value; saveAll(); });
+      elem.addEventListener('mousedown', e => e.stopPropagation());
+    } else if (action === 'delete') {
+      elem.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (type === 'equipment') deleteEquipmentCard(card.id);
+        else if (type === 'dragonNest') deleteDragonNestCard(card.id);
+        else deleteLineupCard(card.id);
+      });
+    } else if (action === 'duplicate') {
+      elem.addEventListener('click', function(e) {
+        e.stopPropagation();
+        onDuplicate();
+      });
+    }
+  });
+}
+
+// ===== Equipment Cards (3x2) =====
+let equipmentCards = [];
+function createEquipmentCard(x, y, options) {
+  options = options || {};
+  const card = {
+    id: nextCardId, type: 'equipment',
+    x: x || 60, y: y || 60,
+    title: options.title || ('装备 ' + nextCardId),
+    slots: options.slots ? [...options.slots] : new Array(6).fill(null),
+  };
+  nextCardId++;
+  equipmentCards.push(card);
+  renderEquipmentCard(card);
+  updateCanvasTransform();
+  saveAll();
+  return card;
+}
+function deleteEquipmentCard(cardId) {
+  const idx = equipmentCards.findIndex(c => c.id === cardId);
+  if (idx === -1) return;
+  const el = document.getElementById('ec-' + cardId);
+  if (el) el.remove();
+  equipmentCards.splice(idx, 1);
+  cleanupConnections();
+  updateCanvasTransform();
+  saveAll();
+  setStatus('已删除装备');
+}
+function renderEquipmentCard(card) {
+  let el = document.getElementById('ec-' + card.id);
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'lineup-card card-equipment';
+    el.id = 'ec-' + card.id;
+    $('canvasInner').appendChild(el);
+  }
+  el.style.left = card.x + 'px';
+  el.style.top = card.y + 'px';
+  el.innerHTML = `
+    <div class="lc-header lc-header-minimal">
+      <span class="lc-drag-handle" data-action="move">⠿</span>
+      <button class="lc-mini-btn" data-action="duplicate" title="复制">⧉</button>
+      <button class="lc-mini-btn delete" data-action="delete" title="删除">✕</button>
+    </div>
+    <div class="card-body">
+      <div class="ec-card-port" data-ec-port data-card-id="${card.id}" title="整组装备接口（拖拽连接到角色）"></div>
+      <div class="ec-grid">
+        ${card.slots.map((name, i) => {
+          const cat = EQUIPMENT_SLOTS[i];
+          if (name) {
+            return `<div class="ec-slot filled" data-slot="${i}" title="${escHtml(cat)} - ${escHtml(name)}（左键更换，右键卸下）">
+              <img class="ec-img" src="${getEquipmentPath(i, name)}" onerror="this.style.display='none'">
+            </div>`;
+          }
+          return `<div class="ec-slot" data-slot="${i}" title="${escHtml(cat)}（左键选择装备）">
+            <span class="ec-plus">+</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+  bindCardChrome(el, card, 'equipment', () => {
+    createEquipmentCard(card.x + 36, card.y + 36, { title: card.title + ' (副本)', slots: card.slots });
+    setStatus('已复制装备');
+  });
+  // Slot interactions: click to open equipment picker, right-click to unequip
+  el.querySelectorAll('.ec-slot').forEach(slot => {
+    const slotIdx = parseInt(slot.dataset.slot);
+    slot.addEventListener('mousedown', e => e.stopPropagation());
+    slot.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openEquipmentModal(card.id, slotIdx);
+    });
+    slot.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (card.slots[slotIdx]) {
+        card.slots[slotIdx] = null;
+        cleanupConnections();
+        renderEquipmentCard(card);
+        saveAll();
+        setStatus('已卸下 ' + EQUIPMENT_SLOTS[slotIdx]);
+      }
+    });
+  });
+  bindEcPorts(el);
+  requestRedraw();
+}
+
+// ===== Dragon Nest Cards (8x8) =====
+let dragonNestCards = [];
+function createDragonNestCard(x, y, options) {
+  options = options || {};
+  const card = {
+    id: nextCardId, type: 'dragonNest',
+    x: x || 60, y: y || 60,
+    title: options.title || ('龙巢 ' + nextCardId),
+    slots: options.slots ? [...options.slots] : new Array(64).fill(null),
+    artifacts: options.artifacts ? options.artifacts.map(a => ({...a})) : [],
+  };
+  nextCardId++;
+  dragonNestCards.push(card);
+  renderDragonNestCard(card);
+  updateCanvasTransform();
+  saveAll();
+  return card;
+}
+function deleteDragonNestCard(cardId) {
+  const idx = dragonNestCards.findIndex(c => c.id === cardId);
+  if (idx === -1) return;
+  const el = document.getElementById('dn-' + cardId);
+  if (el) el.remove();
+  dragonNestCards.splice(idx, 1);
+  updateCanvasTransform();
+  saveAll();
+  setStatus('已删除龙巢');
+}
+function renderDragonNestCard(card) {
+  // Safety: clamp slots to exactly 64, filter out-of-bounds artifacts
+  if (!Array.isArray(card.slots) || card.slots.length !== 64) {
+    card.slots = (card.slots || []).slice(0, 64);
+    while (card.slots.length < 64) card.slots.push(null);
+  }
+  if (Array.isArray(card.artifacts)) {
+    card.artifacts = card.artifacts.filter(a => {
+      const t = findTreasure(a.file);
+      return t && a.row >= 0 && a.col >= 0 && a.row + t.h <= 8 && a.col + t.w <= 8;
+    });
+  }
+  // Build set of already-placed treasure files for filtering
+  const placedFiles = new Set((card.artifacts || []).map(a => a.file));
+
+  let el = document.getElementById('dn-' + card.id);
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'lineup-card card-dragonNest';
+    el.id = 'dn-' + card.id;
+    $('canvasInner').appendChild(el);
+  }
+  el.style.left = Math.round(card.x) + 'px';
+  el.style.top = Math.round(card.y) + 'px';
+  el.innerHTML = `
+    <div class="lc-header lc-header-minimal">
+      <span class="lc-drag-handle" data-action="move">⠿</span>
+      <button class="lc-mini-btn" data-action="duplicate" title="复制">⧉</button>
+      <button class="lc-mini-btn delete" data-action="delete" title="删除">✕</button>
+    </div>
+    <div class="card-body">
+      <div class="dn-grid" data-dn-grid>
+        ${card.slots.map((name, i) => {
+          const sr = Math.floor(i / 8) + 1, sc = (i % 8) + 1;
+          if (name) {
+            const d = DRAGONS.find(x => x.name === name) || DRAGONS[0];
+            return `<div class="dn-cell filled" data-slot="${i}" title="${escHtml(name)}" style="grid-row:${sr};grid-column:${sc};"><img class="dn-img" src="ass/龙/${d.file}" onerror="this.style.display='none'"></div>`;
+          }
+          return `<div class="dn-cell" data-slot="${i}" style="grid-row:${sr};grid-column:${sc};"><span class="dn-dot"></span></div>`;
+        }).join('')}
+        ${card.artifacts.map((a, ai) => {
+          const t = findTreasure(a.file) || { h: 1, w: 1 };
+          return `<div class="dn-artifact" data-art-idx="${ai}" draggable="true" title="${escHtml(a.file)}（拖拽移动位置，右键移除）"
+            style="grid-row: ${a.row + 1} / span ${t.h}; grid-column: ${a.col + 1} / span ${t.w};">
+            <img src="${getTreasurePath(a.file)}" onerror="this.style.display='none'">
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="dn-picker-toggle${card.pickerOpen ? ' open' : ''}" data-dn-toggle><span class="dpt-arrow">▼</span> 神器库 (${placedFiles.size}/${allTreasures().length})</div>
+      <div class="dn-picker-panel${card.pickerOpen ? ' open' : ''}" data-dn-panel>
+        <div class="dn-picker-inner">
+          <div class="dn-picker-title">拖拽到格子放置 · 右键快速放入</div>
+          <div class="dn-picker-grid" data-dn-picker-grid>
+            ${allTreasures().filter(t => !placedFiles.has(t.file)).map(t => `
+              <div class="dn-picker-item${CUSTOM_TREASURE_MAP[t.file] ? ' dn-picker-custom' : ''}"
+                data-treasure-file="${t.file}"
+                draggable="true"
+                title="${CUSTOM_TREASURE_MAP[t.file] ? '自定义神器·拖到右下角垃圾桶删除' : (t.file + '（高'+t.h+'×宽'+t.w+'，右键快速放入）')}">
+                <img src="${getTreasurePath(t.file)}" onerror="this.style.display='none'">
+                <span class="dpi-dim">${t.h}\u00d7${t.w}</span>
+              </div>
+            `).join('')}
+            <div class="dn-picker-upload" data-dn-upload title="上传自定义神器（文件名前两位为高×宽，如22=2×2）">
+              <span class="dn-upload-icon">＋</span>
+              <span class="dn-upload-label">上传</span>
+            </div>
+          </div>
+          <div class="dn-picker-hint">已放置的神器不再显示 · 同一神器不可重复放入</div>
+        </div>
+      </div>
+    </div>
+  `;
+  bindCardChrome(el, card, 'dragonNest', () => {
+    createDragonNestCard(card.x + 36, card.y + 36, { title: card.title + ' (副本)', slots: card.slots, artifacts: card.artifacts });
+    setStatus('已复制龙巢');
+  });
+
+  const gridEl = el.querySelector('[data-dn-grid]');
+  const toggleEl = el.querySelector('[data-dn-toggle]');
+  const panelEl = el.querySelector('[data-dn-panel]');
+
+  // Toggle expand/collapse (persist open state in card data so re-render keeps it)
+  toggleEl.addEventListener('click', function(e) {
+    e.stopPropagation();
+    card.pickerOpen = !card.pickerOpen;
+    panelEl.classList.toggle('open', card.pickerOpen);
+    toggleEl.classList.toggle('open', card.pickerOpen);
+  });
+  // Click cell: only open picker, do NOT cycle dragons
+  el.querySelectorAll('.dn-cell').forEach(cell => {
+    cell.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const slotIdx = parseInt(cell.dataset.slot);
+      dnPickerAnchorIdx = slotIdx;
+      dnPickerCardRef = card;
+      if (!card.pickerOpen) {
+        card.pickerOpen = true;
+        panelEl.classList.add('open');
+        toggleEl.classList.add('open');
+        renderDragonNestCard(card);
+      }
+    });
+  });
+
+  // Helper: show / move / hide the dashed placement preview (single element, reused)
+  let previewEl = null;
+  function showPreview(file, row, col, ok) {
+    const t = findTreasure(file);
+    if (!t) { hidePreview(); return; }
+    if (!previewEl) {
+      previewEl = document.createElement('div');
+      previewEl.style.pointerEvents = 'none';
+      gridEl.appendChild(previewEl);
+    }
+    previewEl.className = 'dn-preview' + (ok ? '' : ' dn-preview-bad');
+    previewEl.style.gridRow = (row + 1) + ' / span ' + t.h;
+    previewEl.style.gridColumn = (col + 1) + ' / span ' + t.w;
+  }
+  function hidePreview() {
+    if (previewEl) { previewEl.remove(); previewEl = null; }
+  }
+  // Compute (row, col) from a drag event over the grid
+  function cellFromEvent(ev) {
+    const r = gridEl.getBoundingClientRect();
+    // Detect cell size from the first cell (works for both desktop 44px and mobile 34px)
+    const firstCell = gridEl.querySelector('.dn-cell');
+    const cellSize = firstCell ? firstCell.offsetWidth : 44;
+    const gap = parseFloat(getComputedStyle(gridEl).gap) || 4;
+    const pitch = cellSize + gap;
+    const x = (ev.clientX - r.left) / canvasScale;
+    const y = (ev.clientY - r.top) / canvasScale;
+    const col = Math.floor(x / pitch);
+    const row = Math.floor(y / pitch);
+    if (row < 0 || row > 7 || col < 0 || col > 7) return null;
+    return { row, col };
+  }
+
+  // Cell right-click: clear dragon
+  el.querySelectorAll('.dn-cell').forEach(cell => {
+    cell.addEventListener('mousedown', e => e.stopPropagation());
+    cell.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const slotIdx = parseInt(cell.dataset.slot);
+      if (card.slots[slotIdx]) {
+        card.slots[slotIdx] = null;
+        renderDragonNestCard(card);
+        saveAll();
+        setStatus('已清空龙巢位');
+      }
+    });
+  });
+
+  // Grid-level DnD
+  gridEl.addEventListener('dragover', function(e) {
+    const isTreasure = e.dataTransfer.types.includes('text/treasure');
+    const isRepos = e.dataTransfer.types.includes('text/treasure-repos');
+    if (!isTreasure && !isRepos) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = isRepos ? 'move' : 'copy';
+    const data = currentDragTreasure;
+    if (!data) return;
+    const pos = cellFromEvent(e);
+    if (!pos) { hidePreview(); return; }
+    const ok = canPlaceArtifact(card, data.file, pos.row, pos.col, data.reposIdx);
+    showPreview(data.file, pos.row, pos.col, ok);
+  });
+  gridEl.addEventListener('dragleave', function(e) {
+    if (e.relatedTarget && gridEl.contains(e.relatedTarget)) return;
+    hidePreview();
+  });
+  gridEl.addEventListener('drop', function(e) {
+    e.preventDefault(); e.stopPropagation();
+    hidePreview();
+    const data = currentDragTreasure;
+    if (!data) return;
+    const pos = cellFromEvent(e);
+    if (!pos) return;
+    if (canPlaceArtifact(card, data.file, pos.row, pos.col, data.reposIdx)) {
+      if (data.reposIdx != null) {
+        card.artifacts[data.reposIdx].row = pos.row;
+        card.artifacts[data.reposIdx].col = pos.col;
+      } else {
+        card.artifacts.push({ file: data.file, row: pos.row, col: pos.col });
+      }
+      renderDragonNestCard(card);
+      saveAll();
+      setStatus(data.reposIdx != null ? '已移动神器位置' : '已放入神器', true);
+    } else {
+      setStatus('该位置放不下（越界或重叠）');
+    }
+  });
+
+  // Artifact drag-to-reposition and right-click-remove
+  el.querySelectorAll('.dn-artifact').forEach(art => {
+    const ai = parseInt(art.dataset.artIdx);
+    art.addEventListener('mousedown', e => { e.stopPropagation(); });
+    art.addEventListener('dragstart', function(e) {
+      const a = card.artifacts[ai];
+      if (!a) { e.preventDefault(); return; }
+      e.stopPropagation();
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/treasure-repos', String(ai));
+      currentDragTreasure = { file: a.file, reposIdx: ai };
+    });
+    art.addEventListener('dragend', function(e) {
+      this.classList.remove('dragging');
+      currentDragTreasure = null;
+      hidePreview();
+    });
+    art.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const removed = card.artifacts.splice(ai, 1)[0];
+      renderDragonNestCard(card);
+      saveAll();
+      setStatus('已移除神器 ' + (removed ? removed.file : ''));
+    });
+  });
+
+  // Picker item drag-start (from inline panel)
+  el.querySelectorAll('.dn-picker-item').forEach(item => {
+    item.addEventListener('dragstart', function(e) {
+      const file = item.dataset.treasureFile;
+      currentDragTreasure = { file: file };
+      dnPickerCardRef = card;
+      e.dataTransfer.effectAllowed = 'copy';
+      e.dataTransfer.setData('text/treasure', file);
+      // Mark custom uploads so trash zone knows it's a custom image
+      if (CUSTOM_TREASURE_MAP[file]) {
+        e.dataTransfer.setData('text/custom-treasure', file);
+      }
+    });
+    item.addEventListener('dragend', function(e) {
+      currentDragTreasure = null;
+      hidePreview();
+    });
+    // Right-click = quick place at anchor or first available cell
+    item.addEventListener('contextmenu', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      const file = item.dataset.treasureFile;
+      // Try anchor first
+      if (dnPickerAnchorIdx != null) {
+        const r = Math.floor(dnPickerAnchorIdx / 8), c = dnPickerAnchorIdx % 8;
+        if (canPlaceArtifact(card, file, r, c)) {
+          card.artifacts.push({ file: file, row: r, col: c });
+          renderDragonNestCard(card);
+          saveAll();
+          setStatus('已放入神器', true);
+          return;
+        }
+      }
+      // Auto-find first valid position
+      const t = findTreasure(file);
+      if (!t) return;
+      for (let tryR = 0; tryR <= 8 - t.h; tryR++) {
+        for (let tryC = 0; tryC <= 8 - t.w; tryC++) {
+          if (canPlaceArtifact(card, file, tryR, tryC)) {
+            card.artifacts.push({ file: file, row: tryR, col: tryC });
+            renderDragonNestCard(card);
+            saveAll();
+            setStatus('已自动放入神器 (' + (tryR+1) + ',' + (tryC+1) + ')', true);
+            return;
+          }
+        }
+      }
+      setStatus('龙巢没有足够空间放置此神器');
+    });
+  });
+
+  // Upload cell (last slot in picker grid)
+  const uploadCell = el.querySelector('.dn-picker-upload');
+  if (uploadCell) {
+    uploadCell.addEventListener('click', function(e) {
+      e.stopPropagation();
+      uploadCustomTreasure(card);
+    });
+  }
+}
+
+// ===== Treasure picker state (inline in card, no floating panel) =====
+let dnPickerCardRef = null;   // reference to current dragon nest card
+let dnPickerAnchorIdx = null; // anchor slot for right-click quick-place
+let currentDragTreasure = null; // { file } or { file, reposIdx } — set on dragstart
+
+// Can a treasure (file) be placed with its top-left at (row, col)?
+// excludeIdx: when repositioning, skip overlap check against the artifact being moved
+function canPlaceArtifact(card, file, row, col, excludeIdx) {
+  const t = findTreasure(file);
+  if (!t) return false;
+  if (row < 0 || col < 0 || row + t.h > 8 || col + t.w > 8) return false;
+  // Prevent duplicate: same file can't be placed twice (unless it's the one being repositioned)
+  for (let i = 0; i < card.artifacts.length; i++) {
+    if (excludeIdx != null && i === excludeIdx) continue;
+    const a = card.artifacts[i];
+    if (a.file === file) return false; // duplicate
+    const at = findTreasure(a.file) || { h: 1, w: 1 };
+    if (row < a.row + at.h && row + t.h > a.row && col < a.col + at.w && col + t.w > a.col) return false;
+  }
+  return true;
+}
+
+function renderLineupCard(card) {
+  let el = document.getElementById('lc-' + card.id);
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'lineup-card';
+    el.id = 'lc-' + card.id;
+    $('canvasInner').appendChild(el);
+  }
+
+  el.style.left = card.x + 'px';
+  el.style.top = card.y + 'px';
+
+  // Find dragon for image
+  const dragon = DRAGONS.find(d => d.name === card.dragonName) || DRAGONS[0];
+
+  el.innerHTML = `
+    <div class="lc-header">
+      <span class="lc-drag-handle" data-action="move">⠿</span>
+      <select class="lc-dragon-select" data-action="dragon">
+        ${DRAGONS.map(d => `<option value="${d.name}" ${d.name === card.dragonName ? 'selected' : ''}>${d.name}</option>`).join('')}
+      </select>
+      <input class="lc-title-input" type="text" value="${escHtml(card.title)}" data-action="title">
+      <div class="lc-actions">
+        <button class="lc-btn" data-action="duplicate" title="复制">⧉</button>
+        <button class="lc-btn delete" data-action="delete" title="删除">✕</button>
+      </div>
+    </div>
+    <div class="lc-body">
+      <div class="lc-showcase">
+        <div class="lc-showcase-wrapper">
+          <img src="ass/龙/${dragon.file}" alt="${dragon.name}" onerror="this.src='${SHOWCASE_FALLBACK}'">
+        </div>
+        <div class="lc-showcase-name">${dragon.name}</div>
+        <div class="lc-longyu">
+          ${card.longyu.map((f, i) => `
+            <div class="lc-longyu-slot" data-action="longyu" data-slot="${i}">
+              <img src="${getLongyuPath(f)}" title="${getLongyuName(f)}" onerror="this.style.display='none'">
+              <div class="lc-longyu-name">${getLongyuName(f)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="lc-lineup">
+        <div class="lc-col-labels">
+          <span class="lc-col-label back">后排</span>
+          <span class="lc-col-label mid">中排</span>
+          <span class="lc-col-label front">前排</span>
+        </div>
+        <div class="lc-grid">
+          ${card.lineup.map((name, i) => {
+            if (name) {
+              const job = getJobClass(name);
+              return `<div class="lc-slot filled" data-slot="${i}" data-card="${card.id}" title="${name} (左键换位，右键移除)" draggable="true">
+                <img class="slot-char-bg" src="${isSSR(name) ? 'SSR.png' : 'SR.png'}" onerror="this.style.display='none'">
+                <img class="slot-char-img" src="${getSpriteFile(name)}" onerror="this.src='${SLOT_FALLBACK}'" draggable="false">
+                <img class="slot-char-badge" src="S6.png" onerror="this.style.display='none'">
+                <img class="slot-char-job" src="common_Job_${job}.png" onerror="this.style.display='none'">
+              </div>`;
+            }
+            return `<div class="lc-slot" data-slot="${i}" data-card="${card.id}" title="空位"><div class="slot-empty-icon">+</div></div>`;
+          }).join('')}
+        <div class="lc-skill-order">
+          <div class="lc-so-header">
+            <span class="lc-so-title">奥义顺序</span>
+          </div>
+          <div class="lc-so-row" data-card="${card.id}">
+            ${renderSkillOrderHTML(card)}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // ===== Event delegation for the card =====
+  el.querySelectorAll('[data-action]').forEach(elem => {
+    const action = elem.dataset.action;
+    if (action === 'move') {
+      // Card dragging via handle
+      let cardDragStartX, cardDragStartY, cardDragStartCardX, cardDragStartCardY;
+      elem.addEventListener('mousedown', function(e) {
+        e.stopPropagation();
+        cardDragStartX = e.clientX;
+        cardDragStartY = e.clientY;
+        cardDragStartCardX = card.x;
+        cardDragStartCardY = card.y;
+        const onMove = (e) => {
+          card.x = cardDragStartCardX + (e.clientX - cardDragStartX) / canvasScale;
+          card.y = cardDragStartCardY + (e.clientY - cardDragStartY) / canvasScale;
+          el.style.left = Math.round(card.x) + 'px';
+          el.style.top = Math.round(card.y) + 'px';
+          requestRedraw();
+        };
+        const onUp = () => {
+          window.removeEventListener('mousemove', onMove);
+          window.removeEventListener('mouseup', onUp);
+          saveAll();
+        };
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+      });
+    } else if (action === 'title') {
+      elem.addEventListener('change', function() {
+        card.title = this.value;
+        saveAll();
+      });
+      elem.addEventListener('mousedown', e => e.stopPropagation());
+    } else if (action === 'dragon') {
+      elem.addEventListener('change', function() {
+        card.dragonName = this.value;
+        renderLineupCard(card);
+        saveAll();
+      });
+      elem.addEventListener('mousedown', e => e.stopPropagation());
+    } else if (action === 'delete') {
+      elem.addEventListener('click', function(e) {
+        e.stopPropagation();
+        deleteLineupCard(card.id);
+      });
+    } else if (action === 'duplicate') {
+      elem.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const newCard = createLineupCard(card.x + 40, card.y + 40, {
+          title: card.title + ' (副本)',
+          dragonName: card.dragonName,
+        });
+        newCard.lineup = [...card.lineup];
+        newCard.longyu = [...card.longyu];
+        newCard.skillOrder = [...card.skillOrder];
+        newCard.skillOrderToggles = { ...card.skillOrderToggles };
+        renderLineupCard(newCard);
+        saveAll();
+        setStatus('已复制阵容');
+      });
+    } else if (action === 'longyu') {
+      elem.addEventListener('click', function(e) {
+        e.stopPropagation();
+        openLongyuModal(card.id, parseInt(this.dataset.slot));
+      });
+    }
+  });
+
+  // Slot interactions
+  el.querySelectorAll('.lc-slot').forEach(slot => {
+    const slotIdx = parseInt(slot.dataset.slot);
+    const cardId = parseInt(slot.dataset.card);
+    const name = card.lineup[slotIdx];
+
+    // Drag from slot to slot (same or different card)
+    slot.addEventListener('dragstart', function(e) {
+      if (!name) { e.preventDefault(); return; }
+      e.stopPropagation();
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', JSON.stringify({ from: 'slot', name, cardId, slotIdx }));
+    });
+    slot.addEventListener('dragend', function(e) {
+      e.stopPropagation();
+      this.classList.remove('dragging');
+      document.querySelectorAll('.lc-slot').forEach(s => s.classList.remove('drag-over', 'forbidden'));
+    });
+
+    // Drop on slot
+    slot.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.dataTransfer.dropEffect = 'move';
       this.classList.add('drag-over');
     });
     slot.addEventListener('dragleave', function(e) {
@@ -968,249 +2452,248 @@ function renderLineup() {
     });
     slot.addEventListener('drop', function(e) {
       e.preventDefault();
+      e.stopPropagation();
       this.classList.remove('drag-over');
       this.classList.remove('forbidden');
-      document.querySelectorAll('.lineup-slot').forEach(s => s.classList.remove('drag-over','forbidden'));
-      const dropName = e.dataTransfer.getData('text/plain');
+      document.querySelectorAll('.lc-slot').forEach(s => s.classList.remove('drag-over', 'forbidden'));
+
+      let dropName, fromCardId, fromSlotIdx;
+      try {
+        const raw = e.dataTransfer.getData('text/plain');
+        const parsed = JSON.parse(raw);
+        dropName = parsed.name;
+        fromCardId = parsed.cardId;
+        fromSlotIdx = parsed.slotIdx;
+      } catch(ex) {
+        // Fallback: plain text from pool
+        dropName = e.dataTransfer.getData('text/plain');
+        fromCardId = null;
+        fromSlotIdx = null;
+      }
       if (!dropName) return;
-      const fromIdx = lineup.indexOf(dropName);
-      const toIdx = parseInt(this.dataset.idx);
 
-      if (fromIdx === toIdx) return;
+      const targetCard = lineupCards.find(c => c.id === cardId);
+      if (!targetCard) return;
 
-      // Check restriction
-      if (!lineup[toIdx] && !canPlaceInSlot(dropName, toIdx)) {
-        setStatus(JOB_NAMES[getJobClass(dropName)] + '不能放在' + getSlotRestriction(toIdx % 3));
-        return;
-      }
-
-      // From pool or another slot
-      if (fromIdx === -1) {
-        // From pool - already placed check
-        if (isInLineup(dropName)) { setStatus('该角色已上阵'); return; }
-        if (lineupCount() >= 6) { setStatus('阵容已满（最多6人）'); return; }
-        if (!canPlaceInSlot(dropName, toIdx)) { setStatus('该职业不能放在此位置'); return; }
-        lineup[toIdx] = dropName;
-      } else {
-        // Moving between slots
-        if (lineup[toIdx]) {
-          // Swap
-          const temp = lineup[toIdx];
-          if (temp && !canPlaceInSlot(temp, fromIdx)) {
-            setStatus(JOB_NAMES[getJobClass(temp)] + '不能放在' + getSlotRestriction(fromIdx % 3));
+      if (fromCardId != null && fromSlotIdx != null) {
+        // Move from another slot
+        const sourceCard = lineupCards.find(c => c.id === fromCardId);
+        if (!sourceCard) return;
+        const existing = targetCard.lineup[slotIdx];
+        if (!existing) {
+          // Target is empty slot
+          if (fromCardId !== cardId && targetCard.lineup.filter(Boolean).length >= 6) {
+            setStatus('目标阵容已满（最多6人）'); return;
+          }
+          if (!canPlaceInSlot(dropName, slotIdx)) {
+            setStatus(JOB_NAMES[getJobClass(dropName)] + '不能放在' + getSlotRestriction(slotIdx % 3));
             return;
           }
-          if (!canPlaceInSlot(dropName, toIdx)) {
-            setStatus(JOB_NAMES[getJobClass(dropName)] + '不能放在' + getSlotRestriction(toIdx % 3));
-            return;
-          }
-          lineup[fromIdx] = temp;
-          lineup[toIdx] = dropName;
         } else {
-          if (!canPlaceInSlot(dropName, toIdx)) {
-            setStatus(JOB_NAMES[getJobClass(dropName)] + '不能放在' + getSlotRestriction(toIdx % 3));
+          // Target has existing char (swap)
+          if (!canPlaceInSlot(dropName, slotIdx)) {
+            setStatus(JOB_NAMES[getJobClass(dropName)] + '不能放在' + getSlotRestriction(slotIdx % 3));
             return;
           }
-          lineup[toIdx] = dropName;
-          lineup[fromIdx] = null;
+          if (!canPlaceInSlot(existing, fromSlotIdx)) {
+            setStatus(JOB_NAMES[getJobClass(existing)] + '不能放在' + getSlotRestriction(fromSlotIdx % 3));
+            return;
+          }
         }
+        if (fromCardId === cardId) {
+          // Same card swap
+          sourceCard.lineup[fromSlotIdx] = existing;
+          targetCard.lineup[slotIdx] = dropName;
+        } else {
+          // Cross-card move
+          sourceCard.lineup[fromSlotIdx] = existing;
+          targetCard.lineup[slotIdx] = dropName;
+        }
+        renderLineupCard(sourceCard);
+      } else {
+        // From pool
+        if (isCharInCard(dropName, targetCard)) { setStatus('该角色已在此阵容中'); return; }
+        if (targetCard.lineup.filter(Boolean).length >= 6) { setStatus('阵容已满（最多6人）'); return; }
+        if (!canPlaceInSlot(dropName, slotIdx)) {
+          setStatus(JOB_NAMES[getJobClass(dropName)] + '不能放在' + getSlotRestriction(slotIdx % 3));
+          return;
+        }
+        targetCard.lineup[slotIdx] = dropName;
       }
-      movingChar = null;
-      renderLineup();
+
+      updateSkillOrderForCard(targetCard);
+      renderLineupCard(targetCard);
       applyPoolFilter();
       setStatus('已上阵 ' + dropName);
+      saveAll();
     });
 
-    slot.addEventListener('click', function() {
-      if (this.classList.contains('lp-active')) {
-        this.classList.remove('lp-active');
-        return;
-      }
-      const idx = parseInt(this.dataset.idx);
-      const current = lineup[idx];
-
-      if (movingChar) {
-        if (current) {
-          if (!canPlaceInSlot(movingChar, idx)) {
-            setStatus(JOB_NAMES[getJobClass(movingChar)] + '不能放在' + getSlotRestriction(idx % 3));
-            movingChar = null; renderLineup(); return;
-          }
-          const fromIdx = lineup.indexOf(movingChar);
-          if (fromIdx === idx) { movingChar = null; renderLineup(); return; }
-          if (!canPlaceInSlot(current, fromIdx)) {
-            setStatus(JOB_NAMES[getJobClass(current)] + '不能放在' + getSlotRestriction(fromIdx % 3));
-            movingChar = null; renderLineup(); return;
-          }
-          lineup[fromIdx] = current; lineup[idx] = movingChar;
-        } else {
-          if (!canPlaceInSlot(movingChar, idx)) {
-            setStatus(JOB_NAMES[getJobClass(movingChar)] + '不能放在' + getSlotRestriction(idx % 3));
-            movingChar = null; renderLineup(); return;
-          }
-          const fromIdx = lineup.indexOf(movingChar);
-          lineup[fromIdx] = null; lineup[idx] = movingChar;
-        }
-        movingChar = null; renderLineup(); applyPoolFilter(); return;
-      }
+    // Click on slot
+    slot.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const targetCard = lineupCards.find(c => c.id === cardId);
+      if (!targetCard) return;
+      const current = targetCard.lineup[slotIdx];
 
       if (current) {
+        // Remove if no selectedChar, otherwise replace
         if (selectedChar) {
-          if (isInLineup(selectedChar)) { setStatus('该角色已上阵'); return; }
-          if (!canPlaceInSlot(selectedChar, idx)) {
-            setStatus(JOB_NAMES[getJobClass(selectedChar)] + '不能放在' + getSlotRestriction(idx % 3));
+          if (selectedChar !== current && isCharInCard(selectedChar, targetCard)) { setStatus('该角色已在此阵容中'); return; }
+          if (!canPlaceInSlot(selectedChar, slotIdx)) {
+            setStatus(JOB_NAMES[getJobClass(selectedChar)] + '不能放在' + getSlotRestriction(slotIdx % 3));
             return;
           }
-          lineup[idx] = selectedChar;
+          targetCard.lineup[slotIdx] = selectedChar;
           document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
-          selectedChar = null; renderLineup(); applyPoolFilter();
-          setStatus('已替换为 ' + lineup[idx]);
+          selectedChar = null;
+          updateSkillOrderForCard(targetCard);
+          renderLineupCard(targetCard);
+          applyPoolFilter();
+          setStatus('已替换为 ' + targetCard.lineup[slotIdx]);
         } else {
-          lineup[idx] = null;
-          renderLineup(); applyPoolFilter();
+          targetCard.lineup[slotIdx] = null;
+          updateSkillOrderForCard(targetCard);
+          renderLineupCard(targetCard);
+          applyPoolFilter();
           setStatus('已移除 ' + current);
         }
       } else if (selectedChar) {
-        if (isInLineup(selectedChar)) { setStatus('该角色已上阵'); return; }
-        if (lineupCount() >= 6) { setStatus('阵容已满（最多6人）'); return; }
-        if (!canPlaceInSlot(selectedChar, idx)) {
-          setStatus(JOB_NAMES[getJobClass(selectedChar)] + '不能放在' + getSlotRestriction(idx % 3));
+        if (isCharInCard(selectedChar, targetCard)) { setStatus('该角色已在此阵容中'); return; }
+        if (targetCard.lineup.filter(Boolean).length >= 6) { setStatus('阵容已满（最多6人）'); return; }
+        if (!canPlaceInSlot(selectedChar, slotIdx)) {
+          setStatus(JOB_NAMES[getJobClass(selectedChar)] + '不能放在' + getSlotRestriction(slotIdx % 3));
           return;
         }
-        lineup[idx] = selectedChar;
+        targetCard.lineup[slotIdx] = selectedChar;
         document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
-        selectedChar = null; renderLineup(); applyPoolFilter();
-        setStatus('已上阵 ' + lineup[idx]);
+        selectedChar = null;
+        updateSkillOrderForCard(targetCard);
+        renderLineupCard(targetCard);
+        applyPoolFilter();
+        setStatus('已上阵 ' + targetCard.lineup[slotIdx]);
+      }
+      saveAll();
+    });
+
+    // Right click to remove
+    slot.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (name) {
+        targetCard.lineup[slotIdx] = null;
+        updateSkillOrderForCard(targetCard);
+        renderLineupCard(targetCard);
+        applyPoolFilter();
+        setStatus('已移除 ' + name);
+        saveAll();
       }
     });
-
-    lineupGrid.appendChild(slot);
   });
-  // Prevent browser context menu on the grid
-  lineupGrid.addEventListener('contextmenu', e => e.preventDefault());
-  save();
-  updateSkillOrder();
-}
 
-// ===== Skill Order =====
-function updateSkillOrder() {
-  const onField = lineup.filter(Boolean);
-  skillOrder = skillOrder.filter(name => onField.includes(name));
-  onField.forEach(name => {
-    if (!skillOrder.includes(name)) { skillOrder.push(name); }
-    if (skillOrderToggles[name] === undefined) skillOrderToggles[name] = true;
-  });
-  renderSkillOrder();
-}
-
-function renderSkillOrder() {
-  const row = document.getElementById('skillOrderRow');
-  if (!row) return;
-  row.innerHTML = '';
-  if (skillOrder.length === 0) {
-    row.className = 'skill-order-row empty';
-    row.textContent = '阵容为空，请先上阵角色';
-    return;
-  }
-  row.className = 'skill-order-row';
-  skillOrder.forEach((name, i) => {
-    const item = document.createElement('div');
-    item.className = 'skill-order-item';
-    item.draggable = true;
-    item.dataset.name = name;
-    item.dataset.idx = i;
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'so-icon-wrapper';
-
-    const bg = document.createElement('img');
-    bg.className = 'so-bg';
-    bg.src = isSSR(name) ? 'SSR.png' : 'SR.png';
-    bg.onerror = function() { this.style.display = 'none'; };
-
-    const avatar = document.createElement('img');
-    avatar.className = 'so-avatar';
-    avatar.src = getSpriteFile(name);
-    avatar.onerror = function() { this.style.display = 'none'; };
-
-    const badge = document.createElement('img');
-    badge.className = 'so-badge';
-    badge.src = 'S6.png';
-    badge.onerror = function() { this.style.display = 'none'; };
-
-    const jobIcon = document.createElement('img');
-    jobIcon.className = 'so-job';
-    jobIcon.src = 'common_Job_' + getJobClass(name) + '.png';
-    jobIcon.onerror = function() { this.style.display = 'none'; };
-
-    const idxBadge = document.createElement('div');
-    idxBadge.className = 'so-idx';
-    idxBadge.textContent = i + 1;
-
-    wrapper.appendChild(bg);
-    wrapper.appendChild(avatar);
-    wrapper.appendChild(badge);
-    wrapper.appendChild(jobIcon);
-    wrapper.appendChild(idxBadge);
-    item.appendChild(wrapper);
-
-    const toggleLabel = document.createElement('label');
-    toggleLabel.className = 'so-individual-toggle';
-    const toggleInput = document.createElement('input');
-    toggleInput.type = 'checkbox';
-    toggleInput.checked = skillOrderToggles[name] !== false;
-    toggleInput.addEventListener('change', function(e) {
-      skillOrderToggles[name] = this.checked;
-      e.stopPropagation();
-    });
-    const toggleSlider = document.createElement('span');
-    toggleSlider.className = 'so-toggle-slider';
-    toggleLabel.appendChild(toggleInput);
-    toggleLabel.appendChild(toggleSlider);
-    // Prevent drag on toggle interaction
-    toggleLabel.addEventListener('mousedown', function(e) { e.stopPropagation(); });
-    item.appendChild(toggleLabel);
-
+  // Skill order drag
+  el.querySelectorAll('.lc-so-item').forEach(item => {
+    const skillIdx = parseInt(item.dataset.skillIdx);
     item.addEventListener('dragstart', function(e) {
+      e.stopPropagation();
       this.classList.add('dragging');
-      dragSkillIdx = i;
       e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', name);
+      e.dataTransfer.setData('text/skillorder', JSON.stringify({ cardId: card.id, fromIdx: skillIdx }));
+    });
+    item.addEventListener('dragend', function(e) {
+      e.stopPropagation();
+      this.classList.remove('dragging');
+      document.querySelectorAll('.lc-so-item').forEach(el => el.classList.remove('drag-over'));
     });
     item.addEventListener('dragover', function(e) {
       e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      document.querySelectorAll('.skill-order-item').forEach(el => el.classList.remove('drag-over'));
+      e.stopPropagation();
       this.classList.add('drag-over');
-    });
-    item.addEventListener('dragleave', function(e) {
-      this.classList.remove('drag-over');
     });
     item.addEventListener('drop', function(e) {
       e.preventDefault();
-      document.querySelectorAll('.skill-order-item').forEach(el => el.classList.remove('drag-over','dragging'));
-      const fromIdx = dragSkillIdx;
-      const toIdx = parseInt(this.dataset.idx);
-      if (fromIdx === toIdx || fromIdx == null) return;
-      const moved = skillOrder.splice(fromIdx, 1)[0];
-      skillOrder.splice(toIdx > fromIdx ? toIdx - 1 : toIdx, 0, moved);
-      dragSkillIdx = null;
-      renderSkillOrder();
+      e.stopPropagation();
+      this.classList.remove('drag-over');
+      try {
+        const data = JSON.parse(e.dataTransfer.getData('text/skillorder'));
+        if (data.cardId === card.id) {
+          const from = data.fromIdx;
+          const to = parseInt(this.dataset.skillIdx);
+          if (from !== to) {
+            const arr = card.skillOrder;
+            const moved = arr.splice(from, 1)[0];
+            arr.splice(to > from ? to - 1 : to, 0, moved);
+            renderLineupCard(card);
+            saveAll();
+          }
+        }
+      } catch(ex) {}
     });
-    item.addEventListener('dragend', function(e) {
-      this.classList.remove('dragging');
-      document.querySelectorAll('.skill-order-item').forEach(el => el.classList.remove('drag-over'));
-      dragSkillIdx = null;
-    });
-
-    row.appendChild(item);
   });
+
+  // Skill toggle
+  el.querySelectorAll('.so-individual-toggle input').forEach(input => {
+    const charName = input.dataset.charName;
+    input.addEventListener('change', function() {
+      card.skillOrderToggles[charName] = this.checked;
+      saveAll();
+    });
+    input.addEventListener('mousedown', e => e.stopPropagation());
+  });
+  bindSoPorts(el);
+  requestRedraw();
+}
+
+function renderSkillOrderHTML(card) {
+  if (card.skillOrder.length === 0) {
+    return '<div class="lc-so-row empty" style="min-height:48px;display:flex;align-items:center;color:var(--text3);font-size:11px;">阵容为空</div>';
+  }
+  return card.skillOrder.map((name, i) => {
+    const job = getJobClass(name);
+    const checked = card.skillOrderToggles[name] !== false ? 'checked' : '';
+    return `
+      <div class="lc-so-item" draggable="true" data-skill-idx="${i}">
+        <div class="so-icon-wrapper">
+          <img class="so-bg" src="${isSSR(name) ? 'SSR.png' : 'SR.png'}" onerror="this.style.display='none'">
+          <img class="so-avatar" src="${getSpriteFile(name)}" onerror="this.style.display='none'">
+          <img class="so-badge" src="S6.png" onerror="this.style.display='none'">
+          <img class="so-job" src="common_Job_${job}.png" onerror="this.style.display='none'">
+          <div class="so-idx">${i + 1}</div>
+        </div>
+        <label class="so-individual-toggle">
+          <input type="checkbox" ${checked} data-char-name="${escHtml(name)}">
+          <span class="so-toggle-slider"></span>
+        </label>
+        <div class="so-port" data-so-port data-card-id="${card.id}" data-char-name="${escHtml(name)}" title="装备连接口（拖拽装备到此连接）"></div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateSkillOrderForCard(card) {
+  const onField = card.lineup.filter(Boolean);
+  card.skillOrder = card.skillOrder.filter(name => onField.includes(name));
+  onField.forEach(name => {
+    if (!card.skillOrder.includes(name)) card.skillOrder.push(name);
+    if (card.skillOrderToggles[name] === undefined) card.skillOrderToggles[name] = true;
+  });
+  // Drop connections to characters no longer on the field
+  cleanupConnections();
+}
+
+function clampLineup(lineup, max) { let count = lineup.filter(Boolean).length; if (count > max) { for (let i = lineup.length - 1; i >= 0 && count > max; i--) { if (lineup[i]) { lineup[i] = null; count--; } } } }
+function isCharInCard(name, card) {
+  return card.lineup.includes(name);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ===== Pool =====
 function applyPoolFilter() {
   document.querySelectorAll('.char-card').forEach(card => {
+    if (card.classList.contains('pool-upload-cell')) { card.style.display = ''; return; }
     const name = card.dataset.name;
-    if (isInLineup(name)) { card.style.display = 'none'; return; }
     const job = JOB_NAMES[getJobClass(name)] || '';
     const factions = getCharFactions(name);
     const jobMatch = poolJobFilter === '全部' || job === poolJobFilter;
@@ -1220,10 +2703,8 @@ function applyPoolFilter() {
 }
 
 function initFilters() {
-  // Job filters
-  const jobEl = document.getElementById('poolJobFilters');
-  const jobs = ['全部', ...Object.values(JOB_NAMES)];
-  jobs.forEach(j => {
+  const jobEl = $('poolJobFilters');
+  ['全部', ...Object.values(JOB_NAMES)].forEach(j => {
     const btn = document.createElement('button');
     btn.className = 'filter-btn' + (j === poolJobFilter ? ' active' : '');
     btn.textContent = j;
@@ -1236,10 +2717,8 @@ function initFilters() {
     jobEl.appendChild(btn);
   });
 
-  // Faction filters
-  const facEl = document.getElementById('poolFactionFilters');
-  const factions = ['全部', ...FACTIONS];
-  factions.forEach(f => {
+  const facEl = $('poolFactionFilters');
+  ['全部', ...FACTIONS].forEach(f => {
     const btn = document.createElement('button');
     btn.className = 'filter-btn' + (f === poolFactionFilter ? ' active' : '');
     btn.textContent = f;
@@ -1260,45 +2739,32 @@ function initPool() {
     card.dataset.name = name;
     card.title = name;
 
-    const bg = document.createElement('img');
-    bg.className = 'char-bg';
-    bg.src = isSSR(name) ? 'SSR.png' : 'SR.png';
-    bg.onerror = function() { this.style.display = 'none'; };
-
-    const avatar = document.createElement('img');
-    avatar.className = 'char-avatar';
-    avatar.src = getSpriteFile(name);
-    avatar.onerror = function() { this.style.display = 'none'; };
-
-    const badge = document.createElement('img');
-    badge.className = 'char-badge';
-    badge.src = 'S6.png';
-    badge.onerror = function() { this.style.display = 'none'; };
-
-    const jobIcon = document.createElement('img');
-    jobIcon.className = 'char-job';
-    jobIcon.src = 'common_Job_' + getJobClass(name) + '.png';
-    jobIcon.onerror = function() { this.style.display = 'none'; };
-
-    card.appendChild(bg);
-    card.appendChild(avatar);
-    card.appendChild(badge);
-    card.appendChild(jobIcon);
+    const imgLayers = [
+      { cls:'char-bg', src: isSSR(name) ? 'SSR.png' : 'SR.png' },
+      { cls:'char-avatar', src: getSpriteFile(name) },
+      { cls:'char-badge', src: 'S6.png' },
+      { cls:'char-job', src: 'common_Job_' + getJobClass(name) + '.png' },
+    ];
+    imgLayers.forEach(({ cls, src }) => {
+      const img = document.createElement('img');
+      img.className = cls;
+      img.src = src;
+      img.onerror = function() { this.style.display = 'none'; };
+      card.appendChild(img);
+    });
 
     card.draggable = true;
     card.addEventListener('dragstart', function(e) {
-      if (isInLineup(name)) { e.preventDefault(); return; }
       this.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', name);
+      e.dataTransfer.setData('text/plain', JSON.stringify({ from: 'pool', name }));
     });
     card.addEventListener('dragend', function(e) {
       this.classList.remove('dragging');
-      document.querySelectorAll('.lineup-slot').forEach(s => s.classList.remove('drag-over','forbidden'));
+      document.querySelectorAll('.lc-slot').forEach(s => s.classList.remove('drag-over', 'forbidden'));
     });
 
     card.addEventListener('click', function() {
-      if (isInLineup(name)) return;
       if (selectedChar === name) {
         this.classList.remove('selected');
         selectedChar = null;
@@ -1309,48 +2775,302 @@ function initPool() {
         selectedChar = name;
         setStatus('已选择：' + name + '，点击阵容空位上阵');
       }
-      document.querySelectorAll('.lineup-slot:not(.filled)').forEach(s => {
-        s.title = selectedChar ? '点击放入 ' + selectedChar : '空位';
-      });
     });
+
     card.addEventListener('contextmenu', function(e) {
       e.preventDefault();
-      if (isInLineup(name)) return;
-      if (lineupCount() >= 6) { setStatus('阵容已满（最多6人）'); return; }
-      const idx = lineup.findIndex((item, i) => !item && canPlaceInSlot(name, i));
-      if (idx === -1) { setStatus(getJobClass(name) + '没有合适的空位'); return; }
-      lineup[idx] = name;
-      selectedChar = null;
-      document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
-      renderLineup();
-      applyPoolFilter();
-      setStatus('右键上阵：' + name, true);
+      for (const c of lineupCards) {
+        if (c.lineup.filter(Boolean).length >= 6) continue;
+        if (isCharInCard(name, c)) continue;
+        for (let i = 0; i < 9; i++) {
+          if (!c.lineup[i] && canPlaceInSlot(name, i)) {
+            c.lineup[i] = name;
+            updateSkillOrderForCard(c);
+            renderLineupCard(c);
+            selectedChar = null;
+            document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
+            applyPoolFilter();
+            setStatus('右键上阵：' + name + ' → ' + c.title, true);
+            saveAll();
+            return;
+          }
+        }
+      }
+      setStatus('没有可放置的空位');
     });
+
     poolGrid.appendChild(card);
   });
+
+  // Custom uploaded characters (restored from localStorage)
+  CUSTOM_CHARS.forEach(entry => appendCustomCharToPool(entry));
+
+  // Upload cell at the bottom of the pool
+  const uploadCell = document.createElement('div');
+  uploadCell.className = 'char-card pool-upload-cell';
+  uploadCell.title = '上传自定义角色（文件名前两位为阵容：1元素 2旷野 3奥术 4圣堂 5彼岸 6幻境）';
+  uploadCell.innerHTML = '<div class="pool-upload-inner"><span class="pool-upload-icon">＋</span><span class="pool-upload-label">上传角色</span></div>';
+  uploadCell.addEventListener('click', function() { uploadCustomChar(); });
+  poolGrid.appendChild(uploadCell);
+
   applyPoolFilter();
-  charCount.textContent = CHAR_NAMES.length + ' 个角色';
+  charCount.textContent = (CHAR_NAMES.length + CUSTOM_CHARS.length) + ' 个角色';
 }
 
-// ===== Storage =====
-const STORAGE_KEY = "dragon_lineup";
+// ===== Connections (equipment group → character) =====
+let connections = [];      // { id, fromCardId, toCardId, toCharName }
+let nextConnId = 1;
+let draggingConn = null;   // { fromCardId, startX, startY, currX, currY }
 
-function save() {
+function findEcPort(cardId) {
+  return [...document.querySelectorAll('[data-ec-port]')].find(p =>
+    parseInt(p.dataset.cardId) === cardId
+  );
+}
+function findSoPort(cardId, charName) {
+  return [...document.querySelectorAll('[data-so-port]')].find(p =>
+    parseInt(p.dataset.cardId) === cardId && p.dataset.charName === charName
+  );
+}
+function portCenterLocal(portEl) {
+  const inner = $('canvasInner').getBoundingClientRect();
+  const r = portEl.getBoundingClientRect();
+  return {
+    x: (r.left + r.width / 2 - inner.left) / canvasScale,
+    y: (r.top + r.height / 2 - inner.top) / canvasScale,
+  };
+}
+function connPath(f, t) {
+  const dx = t.x - f.x;
+  const dy = t.y - f.y;
+  // Use orthogonal-style routing with a single rounded elbow
+  // Determine primary axis and place elbow
+  let mx = f.x;
+  if (Math.abs(dx) > Math.abs(dy)) {
+    // More horizontal: go mostly horizontally first, then drop down/up
+    mx = f.x + dx * 0.55;
+  } else {
+    // More vertical: go mostly vertically first, then across
+    mx = f.x + dx * 0.85;
+  }
+  return `M${f.x.toFixed(1)},${f.y.toFixed(1)} Q${mx.toFixed(1)},${f.y.toFixed(1)} ${t.x.toFixed(1)},${t.y.toFixed(1)}`;
+}
+function redrawConnections() {
+  const svg = $('connLayer');
+  if (!svg) return;
+  let html = '';
+  // Clear active highlights first
+  document.querySelectorAll('.so-port.conn-active').forEach(p => p.classList.remove('conn-active'));
+  connections.forEach(c => {
+    const fp = findEcPort(c.fromCardId);
+    const tp = findSoPort(c.toCardId, c.toCharName);
+    if (!fp || !tp) return;
+    const f = portCenterLocal(fp);
+    const t = portCenterLocal(tp);
+    html += `<path d="${connPath(f, t)}" data-conn-id="${c.id}" />`;
+    if (tp) tp.classList.add('conn-active');
+  });
+  if (draggingConn) {
+    const dx = draggingConn.currX - draggingConn.startX;
+    const dy = draggingConn.currY - draggingConn.startY;
+    let mx = draggingConn.startX;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      mx = draggingConn.startX + dx * 0.55;
+    } else {
+      mx = draggingConn.startX + dx * 0.85;
+    }
+    html += `<path class="conn-temp" d="M${draggingConn.startX.toFixed(1)},${draggingConn.startY.toFixed(1)} Q${mx.toFixed(1)},${draggingConn.startY.toFixed(1)} ${draggingConn.currX.toFixed(1)},${draggingConn.currY.toFixed(1)}" />`;
+  }
+  svg.innerHTML = html;
+}
+// Coalesce rapid redraw requests into a single rAF
+let _redrawRAF = 0;
+function requestRedraw() {
+  if (_redrawRAF) return;
+  _redrawRAF = requestAnimationFrame(() => { _redrawRAF = 0; redrawConnections(); });
+}
+
+function startConnDrag(e, sourceType, sourceRef) {
+  e.preventDefault();
+  e.stopPropagation();
+  const portEl = e.currentTarget;
+  const start = portCenterLocal(portEl);
+  draggingConn = {
+    sourceType, sourceRef,
+    startX: start.x, startY: start.y,
+    currX: start.x, currY: start.y,
+    snapPort: null,  // currently snapped target port element
+  };
+  redrawConnections();
+  const SNAP_RADIUS_PX = 34; // screen pixels — ports within this distance auto-snap
+  const onMove = (ev) => {
+    const inner = $('canvasInner').getBoundingClientRect();
+    draggingConn.currX = (ev.clientX - inner.left) / canvasScale;
+    draggingConn.currY = (ev.clientY - inner.top) / canvasScale;
+    // Clear previous snap highlight
+    document.querySelectorAll('.conn-target, .conn-snapped').forEach(p => { p.classList.remove('conn-target'); p.classList.remove('conn-snapped'); });
+    // Find nearest valid target port (opposite type) within snap radius
+    const targetSel = sourceType === 'equipment' ? '[data-so-port]' : '[data-ec-port]';
+    const candidates = [...document.querySelectorAll(targetSel)];
+    let best = null, bestDist = SNAP_RADIUS_PX;
+    candidates.forEach(p => {
+      const r = p.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      const d = Math.hypot(ev.clientX - cx, ev.clientY - cy);
+      if (d < bestDist) { bestDist = d; best = p; }
+    });
+    draggingConn.snapPort = best;
+    if (best) {
+      best.classList.add('conn-snapped');
+      // Snap the temp line endpoint to the target port center for visual confirmation
+      const snapped = portCenterLocal(best);
+      draggingConn.currX = snapped.x;
+      draggingConn.currY = snapped.y;
+    }
+    redrawConnections();
+  };
+  const onUp = (ev) => {
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+    document.querySelectorAll('.conn-target, .conn-snapped').forEach(p => { p.classList.remove('conn-target'); p.classList.remove('conn-snapped'); });
+    const port = draggingConn && draggingConn.snapPort;
+    if (port && draggingConn) {
+      // Build connection in canonical form: fromCardId = equipment, toCardId+toCharName = lineup
+      let fromCardId, toCardId, toCharName;
+      if (sourceType === 'equipment') {
+        fromCardId = draggingConn.sourceRef.cardId;
+        toCardId = parseInt(port.dataset.cardId);
+        toCharName = port.dataset.charName;
+      } else {
+        // Started from character port → dropped on equipment port
+        toCardId = draggingConn.sourceRef.cardId;
+        toCharName = draggingConn.sourceRef.charName;
+        fromCardId = parseInt(port.dataset.cardId);
+      }
+      const dup = connections.some(c =>
+        c.fromCardId === fromCardId && c.toCardId === toCardId && c.toCharName === toCharName
+      );
+      if (!dup) {
+        connections.push({ id: nextConnId++, fromCardId, toCardId, toCharName });
+        saveAll();
+        setStatus('已连接装备组 ↔ 角色', true);
+      } else {
+        setStatus('该装备组与角色已连接');
+      }
+    }
+    draggingConn = null;
+    redrawConnections();
+  };
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+}
+
+// Remove connections that reference missing cards / characters
+function cleanupConnections() {
+  const before = connections.length;
+  connections = connections.filter(c => {
+    const ec = equipmentCards.find(e => e.id === c.fromCardId);
+    const lc = lineupCards.find(l => l.id === c.toCardId);
+    if (!ec || !lc) return false;
+    if (!lc.lineup.includes(c.toCharName)) return false;  // character removed
+    return true;
+  });
+  if (connections.length !== before) saveAll();
+}
+
+// Wire ec-port drag — called after each renderEquipmentCard
+function bindEcPorts(root) {
+  root.querySelectorAll('[data-ec-port]').forEach(p => {
+    const cardId = parseInt(p.dataset.cardId);
+    p.addEventListener('mousedown', function(e) { startConnDrag(e, 'equipment', { cardId }); });
+  });
+}
+// Wire so-port drag (reverse direction: character → equipment) — called after each renderLineupCard
+function bindSoPorts(root) {
+  root.querySelectorAll('[data-so-port]').forEach(p => {
+    const cardId = parseInt(p.dataset.cardId);
+    const charName = p.dataset.charName;
+    p.addEventListener('mousedown', function(e) { startConnDrag(e, 'character', { cardId, charName }); });
+    p.addEventListener('dragstart', e => e.preventDefault());
+  });
+}
+
+// Click on a connection line to delete it
+$('connLayer').addEventListener('click', function(e) {
+  if (e.target.tagName === 'path' && e.target.dataset.connId) {
+    const id = parseInt(e.target.dataset.connId);
+    connections = connections.filter(c => c.id !== id);
+    // Clear active port highlights that may now be stale
+    document.querySelectorAll('.so-port.conn-active').forEach(p => p.classList.remove('conn-active'));
+    saveAll();
+    redrawConnections();
+    setStatus('已断开连接');
+  }
+});
+
+// ===== Storage =====
+const STORAGE_KEY = "dragon_lineup_v2";
+
+function saveAll() {
   try {
-    const dragonLongyu = {};
-    DRAGONS.forEach(d => { dragonLongyu[d.name] = [...d.longyu]; });
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      activeDragon: activeDragon ? activeDragon.name : null,
-      lineup: lineup,
-      skillOrder: skillOrder,
-      skillOrderToggles: skillOrderToggles,
-      dragonLongyu: dragonLongyu,
+      lineupCards: lineupCards.map(c => ({
+        id: c.id, type: 'lineup', x: c.x, y: c.y,
+        title: c.title, dragonName: c.dragonName,
+        lineup: c.lineup, longyu: c.longyu,
+        skillOrder: c.skillOrder, skillOrderToggles: c.skillOrderToggles,
+      })),
+      equipmentCards: equipmentCards.map(c => ({
+        id: c.id, type: 'equipment', x: c.x, y: c.y, title: c.title, slots: c.slots,
+      })),
+      dragonNestCards: dragonNestCards.map(c => ({
+        id: c.id, type: 'dragonNest', x: c.x, y: c.y, title: c.title, slots: c.slots, artifacts: c.artifacts || [],
+        pickerOpen: c.pickerOpen || false,
+      })),
+      connections: connections,
+      nextConnId: nextConnId,
+      nextCardId: nextCardId,
     }));
   } catch(e) {}
 }
 
-function loadStorage() {
-  try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch(e) { return null; }
+function loadAll() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
+// Try migrate from v1
+function migrateV1() {
+  try {
+    const raw = localStorage.getItem("dragon_lineup");
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (data.lineup && data.lineup.some(Boolean)) {
+      const card = createLineupCard(60, 60, { title: '阵容 1' });
+      card.lineup = data.lineup;
+      // Enforce max 6 characters
+      clampLineup(card.lineup, 6);
+      if (data.skillOrder) card.skillOrder = data.skillOrder;
+      if (data.skillOrderToggles) card.skillOrderToggles = data.skillOrderToggles;
+      // Migrate longyu
+      if (data.dragonLongyu && data.activeDragon) {
+        card.dragonName = data.activeDragon;
+        if (data.dragonLongyu[data.activeDragon]) {
+          card.longyu = [...data.dragonLongyu[data.activeDragon]];
+        }
+      }
+      updateSkillOrderForCard(card);
+      renderLineupCard(card);
+      // Clean up old key
+      localStorage.removeItem("dragon_lineup");
+      saveAll();
+      return true;
+    }
+    return false;
+  } catch(e) { return false; }
 }
 
 // ===== Status =====
@@ -1365,73 +3085,187 @@ function setStatus(msg, isSuccess) {
   }, 3000);
 }
 
-// ===== Init =====
-function init() {
-  initDragonList();
-  initFilters();
-  initPool();
-
-  const saved = loadStorage();
-  if (saved) {
-    if (saved.activeDragon) {
-      const cards = document.querySelectorAll('.dragon-card');
-      const idx = DRAGONS.findIndex(d => d.name === saved.activeDragon);
-      if (idx >= 0 && cards[idx]) {
-        cards.forEach(c => c.classList.remove('active'));
-        cards[idx].classList.add('active');
-        activeDragon = DRAGONS[idx];
-      }
-    }
-    if (saved.lineup && saved.lineup.length === 9) {
-      lineup = saved.lineup;
-    }
-    if (saved.skillOrder) skillOrder = saved.skillOrder;
-    if (saved.skillOrderToggles) skillOrderToggles = saved.skillOrderToggles;
-    if (saved.dragonLongyu) {
-      DRAGONS.forEach(d => {
-        if (saved.dragonLongyu[d.name]) d.longyu = [...saved.dragonLongyu[d.name]];
-      });
-    } else if (saved.longyuSelections) {
-      // Legacy migration: saved selections → dragon defaults
-      Object.assign(longyuSelections, saved.longyuSelections);
-      DRAGONS.forEach(d => {
-        if (longyuSelections[d.name]) {
-          d.longyu = [...longyuSelections[d.name]];
-          delete longyuSelections[d.name];
-        }
-      });
-      save();
-    }
-    updateDragonShowcase(activeDragon);
+// ===== Layout =====
+function isMobile() { return window.innerWidth <= 768; }
+function adjustLayout() {
+  const rp = $('poolView');
+  const lb = $('leftBody');
+  if (isMobile()) {
+    if (rp.parentElement !== lb) lb.appendChild(rp);
+  } else {
+    const app = document.querySelector('.app');
+    if (rp.parentElement !== app) app.appendChild(rp);
   }
-  renderLineup();
-  applyPoolFilter();
-  adjustLayout();
 }
 
-window.addEventListener('resize', adjustLayout);
+// ===== Init =====
+function init() {
+  loadCustomImages();
+  initFilters();
+  initPool();
+  initCanvas();
 
-$('saveBtn').addEventListener('click', function() { save(); setStatus('已保存', true); });
+  // Load saved data
+  const saved = loadAll();
+  const hasLineup = saved && saved.lineupCards && saved.lineupCards.length > 0;
+  const hasOther = saved && ((saved.equipmentCards && saved.equipmentCards.length) || (saved.dragonNestCards && saved.dragonNestCards.length));
+  if (hasLineup || hasOther) {
+    nextCardId = saved.nextCardId || 1;
+    (saved.lineupCards || []).forEach(data => {
+      const card = {
+        id: data.id, x: data.x, y: data.y,
+        title: data.title, dragonName: data.dragonName,
+        lineup: data.lineup || new Array(9).fill(null),
+        longyu: data.longyu || LONGYU_BY_SLOT.map(s => s[0]),
+        skillOrder: data.skillOrder || [],
+        skillOrderToggles: data.skillOrderToggles || {},
+      };
+      // Enforce max 6 characters
+      clampLineup(card.lineup, 6);
+      lineupCards.push(card);
+      renderLineupCard(card);
+    });
+    (saved.equipmentCards || []).forEach(data => {
+      const rawSlots = (data.slots && data.slots.length === 6) ? data.slots : new Array(6).fill(null);
+      // Migrate: treat empty strings as null (old text-based slots)
+      const slots = rawSlots.map(s => (s && s !== '') ? s : null);
+      const card = {
+        id: data.id, type: 'equipment', x: data.x, y: data.y,
+        title: data.title, slots: slots,
+      };
+      equipmentCards.push(card);
+      renderEquipmentCard(card);
+    });
+    (saved.dragonNestCards || []).forEach(data => {
+      const card = {
+        id: data.id, type: 'dragonNest', x: data.x, y: data.y,
+        title: data.title, slots: (data.slots && data.slots.length === 64) ? data.slots : new Array(64).fill(null),
+        artifacts: Array.isArray(data.artifacts) ? data.artifacts.filter(a => a && a.file) : [],
+        pickerOpen: data.pickerOpen || false,
+      };
+      dragonNestCards.push(card);
+      renderDragonNestCard(card);
+    });
+    // Load connections (migrate old per-slot model → group model)
+    if (saved.connections) {
+      connections = saved.connections
+        .filter(c => c && c.fromCardId != null && c.toCardId != null && c.toCharName)
+        // Dedupe: same (fromCardId, toCardId, toCharName) — old per-slot connections collapse to one group connection
+        .filter((c, idx, arr) => arr.findIndex(x => x.fromCardId === c.fromCardId && x.toCardId === c.toCardId && x.toCharName === c.toCharName) === idx)
+        .map(c => ({ id: c.id, fromCardId: c.fromCardId, toCardId: c.toCardId, toCharName: c.toCharName }));
+      nextConnId = saved.nextConnId || (connections.reduce((m, c) => Math.max(m, c.id || 0), 0) + 1);
+      cleanupConnections();
+    }
+    // If only other cards existed and no lineup, ensure nextCardId stays consistent
+  } else {
+    // Try v1 migration
+    if (!migrateV1()) {
+      // Create default card
+      const card = createLineupCard(60, 60, { title: '阵容 1' });
+    }
+  }
+
+  adjustLayout();
+  updateCanvasTransform();
+  // Center view on content
+  setTimeout(() => { fitCanvasView(); redrawConnections(); }, 100);
+}
+
+window.addEventListener('resize', () => { adjustLayout(); fitCanvasView(); requestRedraw(); });
+
+$('saveBtn').addEventListener('click', function() { saveAll(); setStatus('已保存', true); });
 $('resetBtn').addEventListener('click', function() {
-  if (!confirm('确定重置阵容吗？')) return;
+  if (!confirm('确定重置所有阵容吗？')) return;
   localStorage.removeItem(STORAGE_KEY);
-  document.querySelectorAll('.dragon-card').forEach(c => c.classList.remove('active'));
-  document.querySelector('.dragon-card').classList.add('active');
-  activeDragon = DRAGONS[0];
-  updateDragonShowcase(activeDragon);
-  lineup = new Array(9).fill(null);
-  renderLineup();
-  document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
+  localStorage.removeItem("dragon_lineup");
+  [...lineupCards, ...equipmentCards, ...dragonNestCards].forEach(c => {
+    const prefix = c.type === 'equipment' ? 'ec-' : c.type === 'dragonNest' ? 'dn-' : 'lc-';
+    const el = document.getElementById(prefix + c.id);
+    if (el) el.remove();
+  });
+  lineupCards = [];
+  equipmentCards = [];
+  dragonNestCards = [];
+  connections = [];
+  nextConnId = 1;
+  nextCardId = 1;
   selectedChar = null;
-  movingChar = null;
+  document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
+  const card = createLineupCard(60, 60, { title: '阵容 1' });
   applyPoolFilter();
+  setTimeout(fitCanvasView, 50);
   setStatus('已重置');
 });
+
+// ===== Tutorial modal =====
+function openTutorial() {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.onclick = function(e) { if (e.target === this) closeModal(); };
+
+  const content = document.createElement('div');
+  content.className = 'modal-content';
+  content.style.maxWidth = '560px';
+  content.style.padding = '20px 24px';
+
+  const title = document.createElement('div');
+  title.className = 'modal-title';
+  title.textContent = '使用教程';
+  title.style.marginBottom = '14px';
+
+  const body = document.createElement('div');
+  body.style.fontSize = '13px';
+  body.style.lineHeight = '1.8';
+  body.style.color = 'var(--text)';
+  body.innerHTML = `
+    <div style="margin-bottom:14px;">
+      <div style="font-size:14px;font-weight:700;color:var(--accent2);margin-bottom:6px;">基础操作</div>
+      <div>• 拖拽角色池中的角色到阵容卡片空槽，或点击选中后点空槽上阵</div>
+      <div>• 右键角色池中的角色可自动上阵到第一个可用空位</div>
+      <div>• 右键空白画布可添加阵容/装备/龙巢卡片</div>
+      <div>• 滚轮缩放画布，拖拽平移</div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:14px;font-weight:700;color:var(--accent2);margin-bottom:6px;">龙巢神器</div>
+      <div>• 点击龙巢格子展开神器库，拖拽神器到格子放置</div>
+      <div>• 右键神器库中的神器可快速放入第一个空位</div>
+      <div>• 神器库最后一格"＋上传"可上传自定义神器</div>
+      <div>• 文件名前两位 = 高×宽（如 <b>22</b>xxx.png = 2×2，<b>23</b>xxx.png = 2×3）</div>
+      <div>• 自定义神器以青色边框区分，拖到右下角垃圾桶直接删除</div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:14px;font-weight:700;color:var(--accent2);margin-bottom:6px;">龙语</div>
+      <div>• 点击阵容卡片中的龙语槽位（1-4 号位）打开选择弹窗</div>
+      <div>• 弹窗最后一格"＋上传龙语"可上传自定义龙语</div>
+      <div>• 文件名（去扩展名）即龙语名称</div>
+      <div>• 自定义龙语项 hover 时右上角出现红色 ✕，点击确认后删除</div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:14px;font-weight:700;color:var(--accent2);margin-bottom:6px;">自定义角色</div>
+      <div>• 角色池最下方"＋上传角色"可上传自定义角色</div>
+      <div>• 文件名编码规则：<b>前两位=阵容，第三位=职业</b>，后面是角色名</div>
+      <div style="margin-left:16px;margin-top:4px;color:var(--text2);font-size:12px;">
+        阵容代码：1=元素 2=旷野 3=奥术 4=圣堂 5=彼岸 6=幻境<br>
+        职业代码：1=守卫 2=牧师 3=刺客 4=战士 5=射手 6=法师<br>
+        示例：<b>452</b>死亡女神.png → 圣堂+彼岸，牧师<br>
+        示例：<b>435</b>智慧巨人.png → 圣堂+奥术，射手
+      </div>
+      <div>• 自定义角色以青色边框区分，拖到右下角垃圾桶直接删除</div>
+    </div>
+    <div style="text-align:center;margin-top:10px;">
+      <button class="btn primary" onclick="closeModal()" style="min-width:120px;">我知道了</button>
+    </div>
+  `;
+
+  content.appendChild(title);
+  content.appendChild(body);
+  overlay.appendChild(content);
+  document.body.appendChild(overlay);
+}
+
+$('tutorialBtn').addEventListener('click', openTutorial);
 
 init();
 </script>
 </body>
 </html>
-
-
-
